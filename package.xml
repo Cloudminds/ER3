@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Package xmlns="http://soap.sforce.com/2006/04/metadata">
     <types>
-        <members>Account_Brand_Junction__c</members>
-        <members>Account_Manager_Junction__c</members>
+        <members>Campaign_Questionnaire__c</members>
         <members>Change_Request__c</members>
-        <members>Getting_Started_reg</members>
+        <members>Lead_Source__c</members>
         <members>Logger_Object__c</members>
         <members>Month_Spend__c</members>
         <members>Ratecard_Brand__c</members>
+        <members>Ratecard_Campaign__c</members>
         <name>CustomTab</name>
     </types>
     <version>36.0</version>

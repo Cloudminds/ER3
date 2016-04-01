@@ -71,7 +71,7 @@ global class ReadyToBillBatchable implements Database.Batchable<SObject>, Databa
             lel.add(e);
          }
          if(lel.size()>0){
-            insert lel;
+            insert lel; //
          }
          
     }

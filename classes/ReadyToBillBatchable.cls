@@ -68,7 +68,7 @@ global class ReadyToBillBatchable implements Database.Batchable<SObject>, Databa
                Type__c = 'Ready To Bill Alert',
                Additional_Info__c =mapAdditionalInfo.get(se)
             );
-            lel.add(e);
+            lel.add(e); //
          }
          if(lel.size()>0){
             insert lel; //

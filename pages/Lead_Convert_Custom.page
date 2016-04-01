@@ -1,0 +1,290 @@
+<apex:page standardController="Lead" extensions="LeadConvertExtension" tabStyle="Lead">
+    <style>
+    .bPageBlock .detailList th.labelCol {
+        width: 25%;
+    }
+    .requiredPicklist {
+        display: block;
+    }
+    </style>
+    <script>
+    var elementFocus = null;
+    function retainFocus() {
+        elementFocus.focus();
+    }
+    function initStyling() {
+        var elems = document.getElementsByClassName('apexp');
+        var elemTop = elems[0];
+        var elemBot = elems[elems.length - 1];
+        elemTop.getElementsByClassName('pbHeader')[0].style.borderBottom = "none";
+        elemTop.getElementsByClassName('pbBody')[0].style.display = "none";
+        elemTop.getElementsByClassName('pbBottomButtons')[0].style.display = "none";
+        elemBot.getElementsByClassName('pbHeader')[0].style.borderBottom = "none";
+        elemBot.getElementsByClassName('pbBody')[0].style.display = "none";
+        elemBot.getElementsByClassName('pbBottomButtons')[0].style.display = "none";
+    }
+    function resetStyling() {
+        var elems = document.getElementsByClassName('apexp');
+        if (elems.length > 3) {
+            elems[1].style.marginRight = "2%";
+            elems[1].style.width = "49%";
+            elems[1].style.display = "inline-block";
+            elems[1].style.float = "left";
+            elems[2].style.width = "49%";
+            elems[2].style.display = "inline-block";
+            elems[2].style.float = "left";
+        } else {
+            elems[1].style.marginRight = "0";
+            elems[1].style.width = "100%";
+            elems[1].style.display = "block";
+            elems[1].style.float = "none";
+        }
+    }
+    </script>
+    <apex:form >
+        <apex:sectionHeader title="Convert Lead" subtitle="{!lead.Name}"/>
+        <!-- CREATE ACCOUNT CHECKBOX -->
+        <div style="text-align: center; font-size: 20px; margin: 10px;">
+            <apex:actionRegion >
+                <apex:outputLabel value="Convert to Account" for="createAccount"/>
+                <apex:inputCheckbox value="{!createAccount}" id="createAccount">
+                    <apex:actionSupport event="onchange" rerender="accountPageBlock,accountPanel" oncomplete="resetStyling()" />
+                </apex:inputCheckbox>
+            </apex:actionRegion>
+        </div>
+        <!-- CREATE ACCOUNT CHECKBOX END -->
+
+        <!-- BUTTONS -->
+        <apex:pageBlock >
+            <apex:pageBlockButtons >
+                <apex:commandButton value="Convert" action="{!save}" />
+                <apex:commandButton value="Cancel" action="{!cancel}" immediate="true" />
+            </apex:pageBlockButtons>
+        </apex:pageBlock>
+        <!-- BUTTONS END -->
+
+        <!-- ACCOUNT PAGE BLOCK -->
+        <apex:outputPanel id="accountPageBlock">
+            <apex:outputPanel rendered="{!createAccount}">
+                <apex:pageBlock title="Convert to Account">
+                    <apex:outputPanel id="accountMessages">
+                        <apex:pageMessages />
+                    </apex:outputPanel>
+
+                    <apex:pageBlockSection columns="2" title="Account Information">
+                        <!-- ACCOUNT INFORMATION LEFT SECTION -->
+                        <apex:pageBlockSection columns="1">
+                            <apex:inputField value="{!account.OwnerId}" required="{!createAccount}"/>
+                            <apex:inputField value="{!account.Type}" label="Account Type" required="{!createAccount}" />
+                            <apex:pageBlockSectionItem >
+                                <apex:outputLabel value="Account Name" />
+                                <apex:actionRegion >
+                                    <apex:outputPanel id="accountNameContainer">
+                                        <apex:inputField value="{!account.Name}" id="name" required="{!createAccount}" styleClass="{!classInputAccountName}" >
+                                            <apex:actionSupport event="onchange" rerender="accountMessages,accountNameContainer,accountPanel,contactMessages" action="{!validateAccountName}" onbeforedomupdate="elementFocus = document.activeElement" oncomplete="retainFocus()" />
+                                        </apex:inputField>
+                                        <apex:outputPanel rendered="{!LEN(accountNameErrorMsg)>0}">
+                                            <div class="requiredInput">
+                                                <span style="background-color: #c00;position: absolute;left: -4px;width: 3px;top: 1px;bottom: 1px;margin-top: -2px"></span>
+                                                <span class="errorMsg"><strong>Error:</strong></span>
+                                                <apex:outputText value=" {!accountNameErrorMsg}" styleClass="errorMsg" />
+                                            </div>
+                                        </apex:outputPanel>
+                                    </apex:outputPanel>
+                                </apex:actionRegion>
+                            </apex:pageBlockSectionItem>
+                            <apex:inputField value="{!account.Legal_Name__c}" />
+                            <apex:inputField value="{!account.Account_Currency__c}" required="true" />
+                            <apex:inputField value="{!account.Website}" />
+                            <apex:inputField value="{!account.Description}" />
+                        </apex:pageBlockSection>
+                        <!-- ACCOUNT INFORMATION LEFT SECTION END -->
+
+                        <!-- ACCOUNT INFORMATION RIGHT SECTION -->
+                        <apex:pageBlockSection columns="1">
+                            <!-- ADSERVING SALES -->
+                            <apex:pageBlockSectionItem >
+                                <apex:outputLabel value="Sales Rep - Ad Serving" />
+                                <apex:outputPanel styleClass="requiredInput requiredPicklist">
+                                    <apex:outputPanel styleClass="requiredBlock requiredPicklist">
+                                    </apex:outputPanel>
+                                    <apex:selectList size="1" value="{!selectedAdServingRep}" multiselect="false" required="true">
+                                        <apex:selectOptions value="{!salesRepsAdServing}" />
+                                    </apex:selectList>
+                                </apex:outputPanel>
+                            </apex:pageBlockSectionItem>
+                            <!-- ADSERVING SALES END -->
+                            <!-- EYEDEMAND SALES -->
+                            <apex:pageBlockSectionItem >
+                                <apex:outputLabel value="Sales Rep - eyeReturn" />
+                                <apex:outputPanel styleClass="requiredInput requiredPicklist">
+                                    <apex:outputPanel styleClass="requiredBlock requiredPicklist">
+                                    </apex:outputPanel>
+                                    <apex:selectList size="1" value="{!selectedEyeDemandRep}" multiselect="false" required="true" >
+                                        <apex:selectOptions value="{!salesRepsEyeDemand}" />
+                                    </apex:selectList>
+                                </apex:outputPanel>
+                            </apex:pageBlockSectionItem>
+                            <!-- EYEDEMAND SALES END -->
+                            <!-- REGION SECTION -->
+                            <apex:pageBlockSectionItem >
+                                <apex:outputPanel id="outputRegionLabelPanel" >
+                                    <apex:outputPanel rendered="{!NOT(overrideRegion)}" >
+                                        <apex:outputLabel value="Account Region" for="outputRegion" />
+                                    </apex:outputPanel>
+                                </apex:outputPanel>
+                                <apex:outputPanel id="outputRegionTextPanel" >
+                                    <apex:outputPanel rendered="{!NOT(overrideRegion)}" >
+                                        <apex:outputField value="{!account.Region__c}" id="outputRegion" />
+                                    </apex:outputPanel>
+                                </apex:outputPanel>
+                            </apex:pageBlockSectionItem>
+
+                            <apex:pageBlockSectionItem >
+                                <apex:outputPanel id="inputRegionLabelPanel" >
+                                    <apex:outputPanel rendered="{!overrideRegion}" >
+                                        <apex:outputLabel value="Account Region" for="inputRegion" />
+                                    </apex:outputPanel>
+                                </apex:outputPanel>
+                                <apex:outputPanel id="inputRegionTextPanel" >
+                                    <apex:outputPanel rendered="{!overrideRegion}" >
+                                        <apex:inputField value="{!account.Region__c}" id="inputRegion" required="true" />
+                                    </apex:outputPanel>
+                                </apex:outputPanel>
+                            </apex:pageBlockSectionItem>
+
+                            <apex:pageBlockSectionItem >
+                                <apex:outputLabel value="Override Region" for="overrideRegion" />
+                                <apex:actionRegion >
+                                    <apex:inputCheckbox value="{!overrideRegion}" id="overrideRegion" >
+                                        <apex:actionSupport event="onchange" rerender="outputRegionLabelPanel,outputRegionTextPanel,inputRegionLabelPanel,inputRegionTextPanel" action="{!setRegion}" />
+                                    </apex:inputCheckbox>
+                                </apex:actionRegion>
+                            </apex:pageBlockSectionItem>
+                        <!-- REGION SECTION END -->
+                        </apex:pageBlockSection>
+                        <!-- ACCOUNT INFORMATION RIGHT SECTION END -->
+                    </apex:pageBlockSection>
+                    <!-- ACCOUNT INFORMATION SECTION END -->
+                    <!-- ADDRESS INFORMATION SECTION -->
+                    <apex:pageBlockSection columns="2" title="Address Information">
+                        <!-- ADDRESS INFORMATION LEFT SECTION -->
+                        <apex:pageBlockSection columns="1">
+                            <apex:pageBlockSectionItem >
+                                <apex:outputLabel value="Country" for="country" />
+                                <apex:actionRegion >
+                                    <apex:inputField value="{!account.BillingCountryCode}" id="country" required="true">
+                                        <apex:actionSupport event="onchange" rerender="outputRegionLabelPanel,outputRegionTextPanel,inputRegionLabelPanel,inputRegionTextPanel" action="{!setRegion}" />
+                                    </apex:inputField>
+                                </apex:actionRegion>
+                            </apex:pageBlockSectionItem>
+                            <apex:inputField value="{!account.BillingStreet}" label="Street" />
+                            <apex:inputField value="{!account.BillingCity}" label="City" />
+                            <apex:inputField value="{!account.BillingStateCode}" label="State/Province" />
+                            <apex:inputField value="{!account.BillingPostalCode}" label="Zip/PostalCode" />
+                        </apex:pageBlockSection>
+                        <!-- ADDRESS INFORMATION LEFT SECTION END -->
+
+                        <!-- ADDRESS INFORMATION RIGHT SECTION -->
+                        <apex:pageBlockSection columns="1">
+                            <apex:inputField value="{!account.Phone}" />
+                        </apex:pageBlockSection>
+                        <!-- ADDRESS INFORMATION RIGHT SECTION END -->
+                    </apex:pageBlockSection>
+                    <!-- ACCOUNT CONTACTS SECTION END -->
+
+                </apex:pageBlock>
+            </apex:outputPanel>
+        </apex:outputPanel>
+        <!-- ACCOUNT PAGE BLOCK END -->
+
+        <!-- CONTACT PAGE BLOCK -->
+        <apex:pageBlock title="Convert to Contact">
+            <apex:outputPanel id="contactMessages">
+                <apex:pageMessages />
+            </apex:outputPanel>
+            <!-- CONTACT INFORMATION SECTION -->
+            <apex:pageBlockSection columns="2" title="Contact Information">
+                <!-- CONTACT INFORMATION LEFT SECTION -->
+                <apex:pageBlockSection columns="1">
+                    <apex:inputField value="{!contact.Type__c}" label="Contact Type" required="true" />
+                    <!-- ACCOUNT -->
+                    <apex:pageBlockSectionItem >
+                        <apex:outputLabel value="Account" for="account" />
+                        <apex:outputPanel id="accountPanel">
+                            <apex:inputField value="{!contact.AccountId}" rendered="{!NOT(createAccount)}" id="account" required="true" />
+                            <apex:outputField value="{!account.Name}" rendered="{!createAccount}" />
+                        </apex:outputPanel>
+                    </apex:pageBlockSectionItem>
+                    <!-- ACCOUNT END -->
+                    <apex:inputField value="{!contact.FirstName}" required="true" />
+                    <apex:inputField value="{!contact.LastName}" required="true" />
+                    <apex:inputField value="{!contact.Email}" required="true" />
+                </apex:pageBlockSection>
+                <!-- CONTACT INFORMATION LEFT SECTION END -->
+
+                <!-- CONTACT INFORMATION RIGHT SECTION -->
+                <apex:pageBlockSection columns="1">
+                    <apex:inputField value="{!contact.OwnerId}" />
+                    <apex:inputField value="{!contact.Title}" />
+                    <apex:inputField value="{!contact.Department}" />
+                    <apex:inputField value="{!contact.Phone}" />
+                    <apex:inputField value="{!contact.MobilePhone}" />
+                    <apex:inputField value="{!contact.Fax}" />
+                </apex:pageBlockSection>
+                <!-- CONTACT INFORMATION RIGHT SECTION END -->
+            </apex:pageBlockSection>
+            <!-- CONTACT INFORMATION SECTION END -->
+
+            <!-- ADDRESS INFORMATION SECTION -->
+            <apex:pageBlockSection columns="2" title="Address Information">
+                <!-- ADDRESS INFORMATION LEFT SECTION -->
+                <apex:pageBlockSection columns="1">
+                    <apex:inputField value="{!contact.MailingCountryCode}" label="Country" />
+                    <apex:inputField value="{!contact.MailingStreet}" label="Street" />
+                    <apex:inputField value="{!contact.MailingCity}" label="City" />
+                    <apex:inputField value="{!contact.MailingStateCode}" label="State/Province" />
+                    <apex:inputField value="{!contact.MailingPostalCode}" label="Zip/PostalCode" />
+                </apex:pageBlockSection>
+                <!-- ADDRESS INFORMATION LEFT SECTION END -->
+
+                <!-- ADDRESS INFORMATION RIGHT SECTION -->
+                <apex:pageBlockSection columns="1">
+                </apex:pageBlockSection>
+                <!-- ADDRESS INFORMATION RIGHT SECTION END -->
+            </apex:pageBlockSection>
+            <!-- ADDRESS INFORMATION SECTION END -->
+
+            <!-- EXTRA EMAIL INFORMATION SECTION -->
+            <apex:pageBlockSection columns="2" title="Also send Invoices to...">
+                <!-- EXTRA EMAIL INFORMATION LEFT SECTION -->
+                <apex:pageBlockSection columns="1">
+                    <apex:inputField value="{!contact.Email_2__c}" />
+                    <apex:inputField value="{!contact.Email_3__c}" />
+                    <apex:inputField value="{!contact.Email_4__c}" />
+                </apex:pageBlockSection>
+                <!-- EXTRA EMAIL INFORMATION LEFT SECTION END -->
+
+                <!-- EXTRA EMAIL INFORMATION RIGHT SECTION -->
+                <apex:pageBlockSection columns="1">
+                </apex:pageBlockSection>
+                <!-- EXTRA EMAIL INFORMATION RIGHT SECTION END -->
+            </apex:pageBlockSection>
+            <!-- EXTRA EMAIL INFORMATION SECTION END -->
+        </apex:pageBlock>
+        <!-- CONTACT PAGE BLOCK END -->
+
+        <!-- BUTTONS -->
+        <apex:pageBlock >
+            <apex:pageBlockButtons >
+                <apex:commandButton value="Convert" action="{!save}" />
+                <apex:commandButton value="Cancel" action="{!cancel}" immediate="true" />
+            </apex:pageBlockButtons>
+        </apex:pageBlock>
+        <!-- BUTTONS END -->
+    </apex:form>
+    <script>
+    initStyling();
+    resetStyling();
+    </script>
+</apex:page>

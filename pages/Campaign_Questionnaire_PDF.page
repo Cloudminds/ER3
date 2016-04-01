@@ -1,0 +1,229 @@
+<apex:page renderAs="pdf" showHeader="false" applyHtmlTag="false" applyBodyTag="false" standardController="Campaign_Questionnaire__c" extensions="CampaignQuestionnaireExtension" tabStyle="Campaign_Questionnaire__c">
+<head>
+    <style>
+    @page {
+        margin-top:2.2em;
+    }
+    body {
+        font-family: Arial, sans-serif;
+        font-size: 12px;
+    }
+    .bPageBlock .detailList th.labelCol {
+        width: 25%;
+    }
+    .requiredPicklist {
+        display: block;
+    }
+    .followup {
+        margin-left: 30px;
+    }
+    h1.noSecondHeader{
+        font-size: 19px;
+        margin-bottom: 30px;
+        text-decoration: underline;
+    }
+    .textForm { 
+        height: 50px;
+        width: 350px; 
+    }
+    </style>
+</head>
+<body>
+    <apex:form >
+        <apex:sectionHeader title="Campaign Questionnaire: {!opportunity.Name}" />
+        <apex:pageBlock >
+            <apex:pageBlockSection columns="1">
+                <b>1) Is this high priority/value? If so, why?</b>
+                <apex:outputPanel rendered="{!(campaignPriorityCheckbox = 'true')}">YES</apex:outputPanel>
+                <apex:outputPanel rendered="{!(campaignPriorityCheckbox = 'false')}">NO</apex:outputPanel>
+                <apex:outputPanel rendered="{!IF(campaignPriorityCheckbox == 'true', true, false)}">
+                    <apex:outputLabel value="Reason: " for="campaignPriorityQuestion" style="font-weight:bold; margin-top: 0;"/>
+                    <apex:outputText value="{!campaignPriority}" id="campaignPriorityQuestion" styleClass="textForm"/>
+                </apex:outputPanel>
+                <br/><br/>
+
+                <b>2) Budget: Which is higher priority for the client?</b>
+                <apex:outputText value="{!budgetPriority}" />
+                <br/><br/>
+
+                <b>3) Campaign Goal: What is the campaign's main goal?</b>
+                <apex:outputText value="{!campaignMainGoal}" />
+                <br/><br/>
+
+                <b>4) Will the campaign use any 3rd party ad serving tags?</b>
+                <apex:outputPanel rendered="{!(thirdParty = 'true')}">YES</apex:outputPanel>
+                <apex:outputPanel rendered="{!(thirdParty = 'false')}">NO</apex:outputPanel>
+                <br/><br/>
+                
+                <b>5) Billing: Is the campaign being billed off the client's impression numbers?</b>
+                <apex:outputPanel rendered="{!(billingImpressions= 'true')}">YES</apex:outputPanel>
+                <apex:outputPanel rendered="{!(billingImpressions= 'false')}">NO</apex:outputPanel>
+                <br/><br/>
+                
+                <b>6) Billing: Is the campaign being billed with fixed CPMs (from the IO)?</b>
+                <apex:outputPanel rendered="{!(billingFixedCPMs = 'true')}">YES</apex:outputPanel>
+                <apex:outputPanel rendered="{!(billingFixedCPMs = 'false')}">NO</apex:outputPanel>
+                <br/><br/>
+                
+                <b>7) Pacing: Should the campaign be paced based on spend or impressions?</b>
+                <apex:outputText value="{!pacingOptions}" />
+                <br/><br/>
+                
+                <b>8) Campaign Goal: Is the campaign optimization goal flexible? i.e Will client be happy with results as long as the campaign is showing improvement towards the goal?</b>
+                <apex:outputPanel rendered="{!(campaignGoal = 'true')}">YES</apex:outputPanel>
+                <apex:outputPanel rendered="{!(campaignGoal = 'false')}">NO</apex:outputPanel>
+                <br/><br/>
+
+                <b>9) Geotarget: Is the client flexible about geo-target locations? i.e. Can we open the geo-target area if the campaign is not hitting optimization goal or spend goal?</b>
+                <apex:outputPanel rendered="{!(geotarget = 'true')}">YES</apex:outputPanel>
+                <apex:outputPanel rendered="{!(geotarget = 'false')}">NO</apex:outputPanel>
+                <br/><br/>
+
+                <b>10) Campaign Extension: Can the campaign be extended if needed?</b>
+                <apex:outputPanel rendered="{!(campaignExtension = 'true')}">YES</apex:outputPanel>
+                <apex:outputPanel rendered="{!(campaignExtension = 'false')}">NO</apex:outputPanel>
+                <br/><br/>
+
+                <b>11) Flights: If the campaign has flights, can the unused budget from one flight be shifted to the next flight?</b>
+                <apex:outputPanel rendered="{!(flights = 'true')}">YES</apex:outputPanel>
+                <apex:outputPanel rendered="{!(flights = 'false')}">NO</apex:outputPanel>
+                <br/><br/>
+
+                <b>12) Ad formats: Can the client provide or create other ad formats if the certain ones are not working for the campaign?</b>
+                <apex:outputPanel rendered="{!(adFormats = 'true')}">YES</apex:outputPanel>
+                <apex:outputPanel rendered="{!(adFormats = 'false')}">NO</apex:outputPanel>
+                <br/><br/>
+
+                <b>13) Creatives: If there are multiple creative messages, are they to be rotated on one tag?</b>
+                <apex:outputPanel rendered="{!(multipleCreatives = 'true')}">YES</apex:outputPanel>
+                <apex:outputPanel rendered="{!(multipleCreatives = 'false')}">NO</apex:outputPanel>
+                <br/><br/>
+
+                <b>14) Standard Banners: Can we serve standard banners to Web Mobile?</b>
+                <apex:outputPanel rendered="{!(webMobile = 'true')}">YES</apex:outputPanel>
+                <apex:outputPanel rendered="{!(webMobile = 'false')}">NO</apex:outputPanel>
+                <br/><br/>
+
+                <b>15) Facebook: If this is a Facebook News Feed campaign, then has the client added eyeDemand as an advertiser/admin on their Facebook page? (See file: "FBX Slides - Newsfeed - Specs and Process Manual" for info)</b>
+                <apex:outputPanel rendered="{!(facebookFollowup = 'true')}">YES</apex:outputPanel>
+                <apex:outputPanel rendered="{!(facebookFollowup = 'false')}">NO</apex:outputPanel>
+                <br/><br/>
+
+                <b>16) Site re-targeting: Does the campaign have site re-targeting?</b>
+                <apex:outputPanel rendered="{!(siteRetargeting = 'true')}">YES</apex:outputPanel>
+                <apex:outputPanel rendered="{!(siteRetargeting = 'false')}">NO</apex:outputPanel>
+                <br/>
+
+                <apex:outputPanel rendered="{!AND(siteRetargeting != null, siteRetargeting == 'true')}" styleClass="followup">
+                    <b>16 a) Site re-targeting: Have we received site pages for re-targeting?</b><br/>
+                    <apex:outputPanel styleClass="followup" rendered="{!(siteRetargetingFollowup1 = 'true')}">YES</apex:outputPanel>
+                    <apex:outputPanel styleClass="followup" rendered="{!(siteRetargetingFollowup1 = 'false')}">NO</apex:outputPanel>
+                    <br/><br/>
+                    
+                    <apex:outputPanel styleClass="followup">
+                    <b>16 b) Site re-targeting: Has the site already been tagged from a previous campaign?</b><br/>
+                    </apex:outputPanel>
+                    <apex:outputPanel styleClass="followup" rendered="{!(siteRetargetingFollowup2 = 'true')}">YES</apex:outputPanel>
+                    <apex:outputPanel styleClass="followup" rendered="{!(siteRetargetingFollowup2 = 'false')}">NO</apex:outputPanel>
+                    <br/><br/>
+                </apex:outputPanel>
+                
+                <br/>
+                <b>17) (Canada only) Search re-targeting: Does the campaign have search re-targeting?</b>
+                <apex:outputPanel rendered="{!(searchRetargeting = 'true')}">YES</apex:outputPanel>
+                <apex:outputPanel rendered="{!(searchRetargeting = 'false')}">NO</apex:outputPanel>
+                <br/>
+
+                <apex:outputPanel rendered="{!AND(searchRetargeting != null, searchRetargeting == 'true')}" styleClass="followup">
+                    <b>17 a) Search re-targeting: Have we received the search keywords?</b><br/>
+                    <apex:outputPanel styleClass="followup" rendered="{!(searchRetargetingFollowup = 'true')}">YES</apex:outputPanel>
+                    <apex:outputPanel styleClass="followup" rendered="{!(searchRetargetingFollowup = 'false')}">NO</apex:outputPanel>
+                    <br/><br/>
+                </apex:outputPanel>
+                
+                <br/>
+                <b>18) Behavioural Targeting: Is the client flexible about bSeg targeting? Can we target alikes?</b>
+                <apex:outputPanel rendered="{!(behaviouralTargeting = 'true')}">YES</apex:outputPanel>
+                <apex:outputPanel rendered="{!(behaviouralTargeting = 'false')}">NO</apex:outputPanel>
+                <br/><br/>
+
+                <b>19) Whitelist/Verticals: If the campaign is running off a whitelist or verticals, can we add to the domain list if the campaign is not hitting the optimization goal or spending goals?</b>
+                <apex:outputPanel rendered="{!(whitelistOrVerticals  = 'true')}">YES</apex:outputPanel>
+                <apex:outputPanel rendered="{!(whitelistOrVerticals  = 'false')}">NO</apex:outputPanel>
+                <br/><br/>
+
+                <b>20) Geo-fencing: Does the campaign have geo-fencing?</b>
+                <apex:outputPanel rendered="{!(geofencing  = 'true')}">YES</apex:outputPanel>
+                <apex:outputPanel rendered="{!(geofencing  = 'false')}">NO</apex:outputPanel>
+                <br/>
+
+                <apex:outputPanel rendered="{!AND(geofencing != null, geofencing == 'true')}" styleClass="followup">
+                    <b>20 a) Is the Geo-fence Worksheet completed?</b><br/>
+                    <apex:outputPanel styleClass="followup" rendered="{!(geofencingFollowup1 = 'true')}">YES</apex:outputPanel>
+                    <apex:outputPanel styleClass="followup" rendered="{!(geofencingFollowup1 = 'false')}">NO</apex:outputPanel>
+                    <br/><br/>
+                </apex:outputPanel>
+
+                <apex:outputPanel rendered="{!AND(geofencing != null, geofencing == 'true')}" styleClass="followup">
+                    <b>20 b) Have they provided the latitude + longitudes and radius to geo-fence by?</b><br/>
+                    <apex:outputPanel styleClass="followup" rendered="{!(geofencingFollowup2 = 'true')}">YES</apex:outputPanel>
+                    <apex:outputPanel styleClass="followup" rendered="{!(geofencingFollowup2 = 'false')}">NO</apex:outputPanel>
+                    <br/><br/>
+                </apex:outputPanel>
+
+                <apex:outputPanel rendered="{!AND(geofencing != null, geofencing == 'true')}" styleClass="followup">
+                    <b>20 c) If there is little inventory available, is the client ok with expanding outside the geo-fenced area (increasing the radius, or targeting the entire city)?</b><br/>
+                    <apex:outputPanel styleClass="followup" rendered="{!(geofencingFollowup3 = 'true')}">YES</apex:outputPanel>
+                    <apex:outputPanel styleClass="followup" rendered="{!(geofencingFollowup3 = 'false')}">NO</apex:outputPanel>
+                    <br/><br/>
+                </apex:outputPanel>
+                
+                <br/>
+                <b>21) Deal ID: Is the campaign running with Deal ID(s)?</b>
+                <apex:outputPanel rendered="{!(dealID = 'true')}">YES</apex:outputPanel>
+                <apex:outputPanel rendered="{!(dealID = 'false')}">NO</apex:outputPanel>
+                <br/>
+
+                <apex:outputPanel rendered="{!AND(dealID != null, dealID == 'true')}" styleClass="followup">
+                    <b>21 a) Have we received all the assets and information required to run the campaign (IDs, publishers/sellers, floor prices, etc.)</b><br/>
+                    <apex:outputPanel styleClass="followup" rendered="{!(dealIDFollowup = 'true')}">YES</apex:outputPanel>
+                    <apex:outputPanel styleClass="followup" rendered="{!(dealIDFollowup = 'false')}">NO</apex:outputPanel>
+                    <br/><br/>
+                </apex:outputPanel>
+                
+                <br/>
+                <b>22) Custom Integrations: Are there any custom integrations involved (weather, gas, new, stock prices, social media integrations)?</b>
+                <apex:outputPanel rendered="{!(customIntegrations = 'true')}">YES</apex:outputPanel>
+                <apex:outputPanel rendered="{!(customIntegrations = 'false')}">NO</apex:outputPanel>
+                <br/>
+
+                <apex:outputPanel rendered="{!AND(customIntegrations != null, customIntegrations == 'true')}" styleClass="followup">
+                    <b>22 a) Have analysts and tech been made aware of the campaign and testing to make sure we can successfully integrate into the necessary sources?</b><br/>
+                    <apex:outputPanel styleClass="followup" rendered="{!(customIntegrationsFollowup = 'true')}">YES</apex:outputPanel>
+                    <apex:outputPanel styleClass="followup" rendered="{!(customIntegrationsFollowup = 'false')}">NO</apex:outputPanel>
+                    <br/><br/>
+                </apex:outputPanel>
+                
+                <br/>
+                <b>23) comScore: Will comScore be layered onto the campaign?</b>
+                <apex:outputPanel rendered="{!(comScore = 'true')}">YES</apex:outputPanel>
+                <apex:outputPanel rendered="{!(comScore = 'false')}">NO</apex:outputPanel>
+                <br/><br/>
+
+                <b>24) eyeVerify: Will eyeVerify be layered onto the campaign?</b>
+                <apex:outputPanel rendered="{!(eyeVerify = 'true')}">YES</apex:outputPanel>
+                <apex:outputPanel rendered="{!(eyeVerify = 'false')}">NO</apex:outputPanel>
+                <br/><br/>
+
+                <b>25) Notes:</b>
+                <apex:outputText value="{!notes}"/>
+                <br/><br/>
+
+                <b>26) File path:</b>
+                <apex:outputText value="{!filePath}"/>
+                <br/><br/>
+            </apex:pageBlockSection>
+        </apex:pageBlock>
+    </apex:form>
+</body>
+</apex:page>

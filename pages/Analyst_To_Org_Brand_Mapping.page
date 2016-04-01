@@ -1,0 +1,166 @@
+<apex:page docType="html-4.01-strict" standardController="Account" extensions="AnalystToOrgBrandMapping,AutoCompleteController" tabstyle="Account" sidebar="false" standardStylesheets="false">
+    <apex:includeScript value="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js" />
+    <apex:includeScript value="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.21/jquery-ui.min.js" />
+    <apex:includescript value="{!URLFOR($Resource.datatables, '/DataTables-1.10.4/media/js/jquery.dataTables.min.js')}" />
+    <apex:stylesheet value="{!URLFOR($Resource.datatables, '/DataTables-1.10.4/media/css/jquery.dataTables.css')}" />
+    <apex:styleSheet value="{!URLFOR($Resource.jQueryUI, '/jquery-ui-1.11.1.custom/jquery-ui.css')}" />
+
+    <apex:remoteObjects >
+        <apex:remoteObjectModel name="Account_Brand_Junction__c" fields="Name,Brand__c,Brand_Name__c,Account__c,Analyst__c,Analyst_Name__c" />
+    </apex:remoteObjects>
+
+    <apex:form id="theForm">
+        <apex:sectionHeader title="Mapping Console" subtitle="Analyst to Account + Brand Mapping" />
+        <apex:pageBlock mode="edit">
+            <apex:pageBlockButtons location="bottom">
+                <apex:commandButton value="Save" action="{!save}" status="pageStatus" reRender="pageMessage"/>
+            </apex:pageBlockButtons>
+
+            <!-- SEARCH RESULTS -->
+            <apex:pageBlockSection title="Search Results" />
+
+            <apex:panelGrid width="95%" columns="1" style="margin-left:2.5%">
+                <c:AnalystOrgComp tableIdLabel="datatable" columnFieldsLabel="Id, Name, Analyst_Name__c" columnTitlesLabel="Record Id, Name, Analyst Name" soqlLabel="Select Id, Name, Analyst_Name__c From Account Order by Name Asc" />
+            </apex:panelGrid>
+            <!-- END OF SEARCH RESULTS -->
+
+            <apex:inputHidden value="{!isAccountBrand}" id="isAccountBrand" />
+            <apex:actionFunction name="refreshMappingPanel" reRender="isAccountBrand,MappingPanelAccountOnly,MappingPanelAccountBrand,pageMessage" immediate="true" status="pageStatus">
+                <apex:param name="setAccountBrand" value="" assignTo="{!isAccountBrand}" />
+            </apex:actionFunction>
+
+            <div style="position: relative;">
+                <apex:outputpanel >
+                    <apex:actionstatus id="pageStatus">
+                        <apex:facet name="start">
+                            <div class="waitingSearchDiv" id="el_loading" style="background-color: #fbfbfb;
+                       height: 100%;opacity:0.85;width:100%;">
+                                <div class="waitingHolder" style="top: 74.2px; width: 91px;">
+                                    <img class="waitingImage" src="/img/loading.gif" title="Please Wait..." />
+                                    <span class="waitingDescription">Loading...</span>
+                                </div>
+                            </div>
+                        </apex:facet>
+                    </apex:actionstatus>
+                </apex:outputpanel>
+            </div>
+
+            <!-- CREATE MAPPING -->
+            <apex:pageBlockSection title="Assign Analyst" collapsible="false" showHeader="true" columns="1" id="mappingSection">
+                <apex:pageMessages id="pageMessage"/>
+                <apex:actionRegion immediate="true">
+                    <apex:pageBlockSection columns="1">
+
+                        <apex:selectList id="chooseMappingOption" size="1" onchange="selectMapping()" label="Choose Option" multiselect="false">
+                            <apex:selectOption itemValue="MappingPanelAccountOnly" itemLabel="Map Analyst to Account Only" />
+                            <apex:selectOption itemValue="MappingPanelAccountBrand" itemLabel="Map Analyst to Account and Brand" />
+                        </apex:selectList>
+
+                    </apex:pageBlockSection>
+                </apex:actionRegion>
+
+                <apex:actionRegion >
+                    <apex:outputPanel id="MappingPanelAccountOnly">
+                        <apex:outputPanel rendered="{!NOT(isAccountBrand)}">
+                            <apex:pageBlockSection columns="1">
+                                <apex:inputField label="Account Name" value="{!account.name}" id="accNameForAccOnly" />
+                            </apex:pageBlockSection>
+                            <apex:pageBlockSection columns="1">
+                                <apex:inputField label="Analyst Name" value="{!account.Analyst__c}" id="analystNameForAccOnly" required="true" />
+                            </apex:pageBlockSection>
+                        </apex:outputPanel>
+                    </apex:outputPanel>
+                </apex:actionRegion>
+
+                <apex:actionRegion >
+                    <apex:outputPanel id="MappingPanelAccountBrand">
+                        <apex:outputPanel rendered="{!isAccountBrand}">
+                            <apex:pageBlockSection columns="1">
+                                <apex:pageBlockSectionItem >
+                                    <apex:outputLabel value="Account" for="accNameForAccBrand" />
+                                    <apex:actionRegion >
+                                        <apex:inputField value="{!accBrandJunc.Account__c}" id="accNameForAccBrand" required="true">
+                                            <apex:actionSupport event="onchange" rerender="brandListPanel" action="{!getBrandOptions}" status="pageStatus"/>
+                                        </apex:inputField>
+                                    </apex:actionRegion>
+                                </apex:pageBlockSectionItem>
+
+                                <apex:pageBlockSectionItem >
+                                    <apex:outputLabel value="Brand" for="brandPickList" />
+                                    <apex:outputPanel styleClass="requiredInput" layout="block" id="brandListPanel">
+                                        <apex:outputPanel styleClass="requiredBlock" layout="block" />
+                                        <apex:selectList size="1" value="{!selectedBrand}" multiselect="false" label="Brand" id="brandNameForAccBrand" required="true">
+                                            <apex:selectOptions value="{!brandPickList}" />
+                                        </apex:selectList>
+                                    </apex:outputPanel>
+                                </apex:pageBlockSectionItem>
+                            </apex:pageBlockSection>
+
+                            <apex:pageBlockSection columns="1">
+                                <apex:inputField label="Analyst Name" value="{!accBrandJunc.Analyst__c}" id="analystNameForAccBrand" required="true" />
+                            </apex:pageBlockSection>
+                        </apex:outputPanel>
+                    </apex:outputPanel>
+                </apex:actionRegion>
+            </apex:pageBlockSection>
+            <!-- END OF MAPPING -->
+        </apex:pageBlock>
+    </apex:form>
+
+    <script type="text/javascript">
+        var recordObjects;
+        var queryTerm;
+
+        //ACCOUNT ONLY MAPPING
+        j$('[id$=accNameForAccOnly]').autocomplete({
+                minLength: 2,
+                source: function (request, response) {
+                    queryTerm = request.term;
+                    AutoCompleteController.searchAccount(request.term, function (result, event) {
+                        if (event.type == 'exception') {
+                            alert(event.message);
+                        } else {
+                            recordObjects = result;
+                            response(recordObjects);
+                        }
+                    });
+                },
+                focus: function (event, ui) {
+                    j$('[id$=accNameForAccOnly]').val(ui.item.Name);
+                    j$('[id$=searchAccountId]').val(ui.item.Id);
+                    return false;
+                },
+                select: function (event, ui) {
+                    j$('[id$=accNameForAccOnly]').val(ui.item.Name);
+                    j$('[id$=searchAccountId]').val(ui.item.Id);
+                    return false;
+                },
+            })
+            .data("autocomplete")._renderItem = function (ul, item) {
+                var entry = "<a>" + item.Name;
+
+                entry = entry + "</a>";
+                entry = entry.replace(queryTerm, "<b>" + queryTerm + "</b>");
+                return j$("<li></li>")
+                    .data("item.autocomplete", item)
+                    .append(entry)
+                    .appendTo(ul);
+            };
+
+        //j$('[id$=MappingPanelAccountBrand]').hide();
+        function selectMapping() {
+            if (j$('[id$=chooseMappingOption]').val() == "MappingPanelAccountOnly") {
+                //j$('[id$=MappingPanelAccountBrand]').hide();               
+                //j$('[id$=MappingPanelAccountOnly]').show();
+                j$('[id$=isAccountBrand]').val(false);
+                refreshMappingPanel(j$('[id$=isAccountBrand]').val());
+            } else {
+                //j$('[id$=MappingPanelAccountOnly]').hide();
+                //j$('[id$=MappingPanelAccountBrand]').show();
+                j$('[id$=isAccountBrand]').val(true);
+                refreshMappingPanel(j$('[id$=isAccountBrand]').val());
+            }
+        }
+        
+    </script>
+</apex:page>

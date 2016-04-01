@@ -1,0 +1,19 @@
+<apex:page controller="ReportRFPGoalsVsClosed" showHeader="false" sidebar="false">
+    <apex:chart height="255" width="100%" data="{!rfpDataWithQuarterNames}">
+        <apex:legend position="bottom"/>
+        <apex:axis type="Numeric" position="left" fields="rfpGoal,quarterlyRev"
+            title="RFP Goal ($)"/>
+        <apex:axis type="Category" position="bottom" fields="quarter"
+            title="{!THIS_YEAR} Quarter">
+            <apex:chartLabel rotate="315"/>
+        </apex:axis>
+        <apex:barSeries title="Quarterly RFP Goal" orientation="vertical" axis="left"
+            xField="quarter" yField="rfpGoal">
+            <apex:chartTips height="20" width="130"/>
+        </apex:barSeries>
+        <apex:lineSeries title="Closed-Won" axis="left" xField="quarter" yField="quarterlyRev"
+            fill="true" markerType="circle" markerSize="4" markerFill="#FF8000">
+            <apex:chartTips height="20" width="130"/>
+        </apex:lineSeries>
+    </apex:chart>
+</apex:page>

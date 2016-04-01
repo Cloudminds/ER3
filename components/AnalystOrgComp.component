@@ -1,0 +1,112 @@
+<apex:component controller="DataTableHandler">
+    <apex:attribute name="tableIdLabel" type="String" required="true"  description="Id of the container which will hold & display the table" assignTo="{!tableId}"  />
+    <apex:attribute name="soqlLabel" assignTo="{!soql}" type="String" description="SOQL query to execute and populate records." />
+    <apex:attribute name="columnFieldsLabel" assignTo="{!columnFields}" type="String" description="Comma-separated list of fields to display." />
+    <apex:attribute name="columnTitlesLabel" assignTo="{!columnTitles}" type="String" description="Comma-separated list of column titles." />
+    
+    <style>
+        td.details-control {
+            background: url('{!URLFOR($Resource.datatable_icons,'icons/add.png')}') no-repeat center center;
+            cursor: pointer;
+        }
+        tr.shown td.details-control {
+            background: url('{!URLFOR($Resource.datatable_icons,'icons/delete.png')}') no-repeat center center;
+        }
+        #datatable {
+            width: 100%;
+        }
+    </style>      
+    <!--<apex:pageMessages />-->
+    
+    <apex:variable value="{!0}" var="rowNum" />
+    <div class="full_width" width="100%">
+        <table cellpadding="0" cellspacing="0" border="0" class="display" id="{!tableId}">
+            <thead>
+                <apex:outputPanel layout="none">
+                    <tr>
+                        <th></th>
+                        <apex:repeat value="{!columnTitlesList}" var="t">
+                            <th>
+                                <apex:outputText value="{!t}" />
+                            </th>                   
+                        </apex:repeat>
+                    </tr>
+                </apex:outputPanel>
+            </thead>
+            
+            <tbody>
+                <apex:repeat value="{!records}" var="recordsList">
+                    <apex:repeat value="{!records[rowNum]}" var="r">
+                        <tr>
+                            <td class="details-control"></td>
+                            <apex:repeat value="{!columnFieldsList}" var="f">
+                                <td>
+                                    <apex:outputField value="{!r[f]}" />
+                                </td>
+                            </apex:repeat>
+                        </tr>
+                    </apex:repeat>
+                    <apex:variable rendered="{!(rowNum < records.size-1)}" var="rowNum" value="{!rowNum+1}"/>
+                </apex:repeat>
+            </tbody>
+        </table>
+    </div>    
+     
+      <script type="text/javascript">
+            j$ = jQuery.noConflict();
+            
+            j$(document).ready( function() {
+                acctTable = j$('#{!tableId}').DataTable({
+                    "order": [[ 2, "asc" ]]
+                });
+                
+                // This is used to watch for clicks to expand and collapse the rows.
+                j$('#{!tableId} tbody').on('click', 'td.details-control', function() {
+                    var tr = j$(this).closest('tr');
+                    var row = acctTable.row(tr);
+                    
+                    if (row.child.isShown()) {
+                        // This row is already open - close it
+                        row.child.hide();
+                        tr.removeClass('shown');
+                    } else {
+                        // Open this row
+                        formatBrands(row.data(), function(childData) {
+                            row.child(childData).show();
+                            tr.addClass('shown');
+                        });
+                    }
+                });
+    
+                // Each time a row is clicked to expand, we need to query for a list of brands for that account and 
+                // build a table that will display as a child to the row
+                function formatBrands(d, callback) {
+                    var accountBrandJunction = new SObjectModel.Account_Brand_Junction__c();
+                    var idTag = j$((d.toString().slice(1, -1)).split(',')[0]).text();
+                    accountBrandJunction.retrieve({
+                        where: {
+                            Account__c: {
+                                eq: idTag
+                            }
+                        },
+                        orderby: [{
+                            Name: 'ASC'
+                        }],
+                        limit: 100
+                    }, function(err, records) {
+                        if (err) alert(err.message);
+                        else {
+                            var table = '<table cellpadding="5" cellspacing="0" border="0" style="padding-left:50px;">' +
+                                '<thead><tr><th>Brand Name</th><th>Analyst (Brand level)</th></tr></thead><tbody>';
+                            records.forEach(function(record) {
+                                table = table + '<tr><td>' + record.get('Brand_Name__c') + '</td><td>' + (record.get('Analyst_Name__c') !== undefined ? record.get('Analyst_Name__c') : '') + '</td></tr>';
+                            });
+                            table = table + '</tbody></table>';
+                            callback(table);
+                        };
+                    });
+                }
+            });
+            
+    </script>   
+</apex:component>

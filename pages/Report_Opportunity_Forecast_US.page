@@ -1,0 +1,103 @@
+<apex:page controller="ReportOpportunityForecast" id="spendUSVFPage" readOnly="true" cache="true">
+    <style>
+    .mComponent .cContent table tr td {
+        padding: 3px;
+    }
+    .pbTitle {
+        white-space: nowrap;
+    }
+    body .bPageBlock .pbBody .blue .pbSubheader{
+        background-color:#1487AC;
+    }
+    </style>
+    <apex:stylesheet value="/sCSS/Theme3/default/dashboard.css" />
+    <script>
+    function setFocusOnLoad() {}
+    </script>
+    <apex:form id="spendUSForm">
+        <c:LoadingScreen />
+        
+        <apex:pageBlock title="Spend Forecast for {!YEAR(TODAY())} - US" id="spendUSPageBlock">
+            <div>
+                <b>Toggle Cumulative Spend View:</b>&nbsp;
+                <apex:inputCheckbox value="{!isCumulativeView}" label="Cumulative Spend View">
+                    <apex:actionSupport event="onchange" rerender="spendUSPageBlock,forecastMonthlyChart,forecastChart,forecastTable" action="{!recalculateForecast}" status="loadStatus" />
+                </apex:inputCheckbox>
+                <p></p>
+            </div>
+        </apex:pageBlock>
+
+        <p></p>
+        <apex:chart height="350" width="100%" data="{!forecastUS}" id="forecastChart">
+            <apex:legend position="bottom" font="10px" />
+            <apex:axis type="Numeric" position="left" fields="managedAmount,selfServeAmount,creativeAmount" title="$ Amount (in thousands)" steps="4" />
+            <apex:axis type="Category" position="bottom" fields="month" title="Month">
+                <apex:chartLabel rotate="270" font="10px"/>
+            </apex:axis>
+            <apex:barSeries orientation="vertical" axis="left" xField="month" yField="managedAmount,selfServeAmount,creativeAmount" title="Managed,Self Serve,Creative Production" stacked="false">
+                <apex:chartTips height="25" width="90" />
+            </apex:barSeries>
+            <apex:lineSeries rendered="{!NOT(isCumulativeView)}" title="Managed (Actual Spend)" axis="left" xField="month" yField="actualSumToDateManaged" strokeColor="#0000FF" markerType="cross" markerSize="4" markerFill="#0000FF" >
+                <apex:chartTips height="25" width="90" />
+            </apex:lineSeries>
+            <apex:lineSeries rendered="{!NOT(isCumulativeView)}" title="Self Serve (Actual Spend)" axis="left" xField="month" yField="actualSumToDateSelfServe" strokeColor="#009900" markerType="circle" markerSize="4" markerFill="#009900" >
+                <apex:chartTips height="25" width="90" />
+            </apex:lineSeries>
+        </apex:chart>
+
+        <apex:outputPanel styleClass="mComponent" id="forecastTable">
+            <apex:outputPanel styleClass="cContent">
+                <apex:dataTable value="{!forecastUSTable}" var="forecast" rowClasses="odd,even" styleClass="list" width="100%">
+                    <apex:column >
+                        <apex:facet name="header">Month</apex:facet>
+                        <apex:outputText value="{!forecast.month}" rendered="{!forecast.type == 'monthly'}" />
+                        <apex:outputText value="{!forecast.month}" style="font-weight: bold;" rendered="{!forecast.type == 'total'}" />
+                    </apex:column>
+                    <apex:column >
+                        <apex:facet name="header">Managed Amount</apex:facet>
+                        <apex:outputText value="{0, number, currency}">
+                            <apex:param value="{!forecast.managedAmount}" />
+                        </apex:outputText>
+                    </apex:column>
+                    <apex:column rendered="{!NOT(isCumulativeView)}">
+                        <apex:facet name="header">Managed (Actual Spend)</apex:facet>
+                        <apex:outputText value="{0, number, currency}">
+                            <apex:param value="{!forecast.actualSumToDateManaged}" />
+                        </apex:outputText>
+                    </apex:column>
+                    <apex:column >
+                        <apex:facet name="header">Self Serve Amount</apex:facet>
+                        <apex:outputText value="{0, number, currency}">
+                            <apex:param value="{!forecast.selfServeAmount}" />
+                        </apex:outputText>
+                    </apex:column>
+                    <apex:column rendered="{!NOT(isCumulativeView)}">
+                        <apex:facet name="header">Self Serve (Actual Spend)</apex:facet>
+                        <apex:outputText value="{0, number, currency}">
+                            <apex:param value="{!forecast.actualSumToDateSelfServe}" />
+                        </apex:outputText>
+                    </apex:column>
+                    <apex:column >
+                        <apex:facet name="header">Creative Amount</apex:facet>
+                        <apex:outputText value="{0, number, currency}">
+                            <apex:param value="{!forecast.creativeAmount}" />
+                        </apex:outputText>
+                    </apex:column>
+                    <apex:column >
+                        <apex:facet name="header">Monthly Total (Forecasted)</apex:facet>
+                        <apex:outputText value="{0, number, currency}">
+                            <apex:param value="{!forecast.forecastedMonthlyTotal}" />
+                        </apex:outputText>
+                    </apex:column>
+                    <apex:column >
+                        <apex:facet name="header">Monthly Total (Actual)</apex:facet>
+                        <apex:outputText value="{0, number, currency}">
+                            <apex:param value="{!forecast.actualMonthlyTotal}" />
+                        </apex:outputText>
+                    </apex:column>
+                </apex:dataTable>
+            </apex:outputPanel>
+        </apex:outputPanel>
+                
+    </apex:form>
+</apex:page>

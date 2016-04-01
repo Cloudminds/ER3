@@ -1,0 +1,39 @@
+<apex:page controller="ReportALLSalesQuotaVsClosed" showHeader="false" sidebar="false" >
+    <!-- Google API inclusion -->
+    <apex:includeScript id="a" value="https://www.google.com/jsapi" />
+ 
+    <!-- Google Charts will be drawn in this DIV -->
+    <div id="chartBlock"/>
+     
+    <script type="text/javascript">
+        // Load the Visualization API and the piechart package.
+        google.load('visualization', '1.0', {'packages':['corechart']});
+       
+        // Set a callback to run when the Google Visualization API is loaded.
+        google.setOnLoadCallback(initCharts);
+   
+        function initCharts() {         
+          // Following the usual Remoting syntax
+          // [<namespace>.]<controller>.<method>([params...,] <callbackFunction>(result, event) {...}
+          // controller : GoogleChartsController
+          // method : loadOpps
+          ReportALLSalesQuotaVsClosed.loadOpps( 
+                 function(result, event){  
+                     // load Column chart
+                     var visualization = new google.visualization.BarChart(document.getElementById('chartBlock'));
+                     // Prepare table model for chart with columns
+                     var data = new google.visualization.DataTable();
+                     data.addColumn('string', 'Sales Rep');
+                     data.addColumn('number', 'Closed Amount');
+                     data.addColumn('number', 'Sales Quota');    
+                     // add rows from the remoting results
+                     for(var i =0; i<result.length;i++){
+                        var r = result[i];
+                        data.addRow([r.name, r.salesActualAmt, r.salesQuotaAmt]); 
+                      }
+                    // all done, lets draw the chart with some options to make it look nice.
+                    visualization.draw(data, {legend : {position: 'top', textStyle: {color: 'blue', fontSize: 10}}, width:window.innerWidth,height:1000,chartArea: {'width': '60%', 'height': '95%'},vAxis:{textStyle:{fontSize: 10}},hAxis:{textStyle:{fontSize: 10},showTextEvery:1,slantedText:false}});
+              }, {escape:true});
+          } 
+    </script>
+</apex:page>

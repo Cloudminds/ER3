@@ -1,0 +1,28 @@
+<apex:page controller="ReportOpportunitySalesRepMismatchDash" readOnly="true">
+    <style>
+    body {
+        margin: 0 !important;
+    }
+    .mComponent .cContent table tr td {
+        padding: 3px;
+    }
+    </style>
+    <apex:param assignTo="{!isDashboardView}" name="isDashboardView" value="True"/>
+    <apex:stylesheet value="/sCSS/Theme3/default/dashboard.css" />
+    <apex:outputLink value="/apex/Report_Opportunity_Sales_Rep_Mismatch" target="_blank">
+        <apex:outputPanel styleClass="mComponent">
+            <apex:outputPanel styleClass="cContent">
+                <apex:dataTable value="{!mismatchData}" var="mismatch" rowClasses="odd,even" styleClass="list" headerClass="headerRow" width="100%">
+                    <apex:column >
+                        <apex:facet name="header">Opp. Name</apex:facet>
+                        <apex:outputText value="{!mismatch.opportunityName}"/>
+                    </apex:column>
+                    <apex:column >
+                        <apex:facet name="header">Acc. Sales Rep</apex:facet>
+                        <apex:outputText value="{!mismatch.accountSalesRep}"/>
+                    </apex:column>
+                </apex:dataTable>
+            </apex:outputPanel>
+        </apex:outputPanel>
+    </apex:outputLink>
+</apex:page>

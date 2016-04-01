@@ -1,0 +1,48 @@
+<apex:page controller="ReportOpportunityForecast" id="spendCanadaVFPage" readOnly="true" cache="true">
+    <style>
+    .mComponent .cContent table tr td {
+        padding: 3px;
+    }
+    .pbTitle {
+        white-space: nowrap;
+    }
+    body .bPageBlock .pbBody .blue .pbSubheader{
+        background-color:#1487AC;
+    }
+    </style>
+    <apex:stylesheet value="/sCSS/Theme3/default/dashboard.css" />
+    <script>
+    function setFocusOnLoad() {}
+    </script>
+    <apex:form id="spendCanadaForm">
+        <c:LoadingScreen />
+        <apex:pageBlock title="Spend Forecast for {!YEAR(TODAY())} - Canada" id="spendCanadaPageBlock">
+            <div>
+                <b>Toggle Cumulative Spend View:</b>&nbsp;
+                <apex:inputCheckbox value="{!isCumulativeView}" label="Cumulative Spend View">
+                    <apex:actionSupport event="onchange" rerender="spendCanadaPageBlock,forecastMonthlyChart,forecastChart,forecastTable" action="{!recalculateForecast}" status="loadStatus" />
+                </apex:inputCheckbox>
+                <p></p>
+            </div>
+        </apex:pageBlock>
+
+        <p></p>
+        <apex:chart height="450" width="100%" data="{!forecastCA}" id="forecastChart">
+            <apex:axis type="Numeric" position="left" fields="managedAmount,selfServeAmount,creativeAmount" title="$ Amount (in thousands)" steps="4" />
+            <apex:axis type="Category" position="bottom" fields="month" title="Month">
+                <apex:chartLabel rotate="270" font="10px"/>
+            </apex:axis>
+            <apex:barSeries orientation="vertical" axis="left" xField="month" yField="managedAmount,selfServeAmount,creativeAmount" title="Managed,Self Serve,Creative Production" stacked="false">
+                <apex:chartTips height="25" width="90" />
+            </apex:barSeries>
+            <apex:lineSeries title="Managed (Actual Spend)" axis="left" xField="month" yField="actualSumToDateManaged" strokeColor="#0000FF" markerType="cross" markerSize="4" markerFill="#0000FF" >
+                <apex:chartTips height="25" width="90" />
+            </apex:lineSeries>
+            <apex:lineSeries title="Self Serve (Actual Spend)" axis="left" xField="month" yField="actualSumToDateSelfServe" strokeColor="#009900" markerType="circle" markerSize="4" markerFill="#009900" >
+                <apex:chartTips height="25" width="90" />
+            </apex:lineSeries>
+        </apex:chart>
+        
+        <p align="center"><a href="/apex/Report_Opportunity_Forecast_CA" target="_blank"><b>Click here</b></a> to view CA report in new page.</p>
+    </apex:form>
+</apex:page>

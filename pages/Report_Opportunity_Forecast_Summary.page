@@ -1,0 +1,75 @@
+<apex:page controller="ReportOpportunityForecastSummary" sidebar="false">
+    <style type="text/css">
+        .empty-column-content {
+            display: none;
+        }
+    </style>
+    <script>
+    function setFocusOnLoad() {}
+    </script>
+    <apex:form >
+        <div style="position: relative;">
+            <apex:outputpanel >
+                <apex:actionstatus id="pageStatus">
+                    <apex:facet name="start">
+                        <div class="waitingSearchDiv" id="el_loading" style="background-color: #fbfbfb;
+                   height: 100%;opacity:1.0;width:100%;">
+                            <div class="waitingHolder" style="top: 15px; width: 100px;">
+                                <img class="waitingImage" src="/img/loading.gif" title="Please Wait..." />
+                                <span class="waitingDescription">Loading...</span>
+                            </div>
+                        </div>
+                    </apex:facet>
+                </apex:actionstatus>
+            </apex:outputpanel>
+        </div>
+    </apex:form>
+    <apex:pageBlock title="Forecast Data (CA)" id="forecastChartCA">
+        <apex:dataTable value="{!opportunityForecastCA}" var="forecast" rowClasses="odd,even" styleClass="list" width="100%">
+            <apex:column >
+                <apex:facet name="header">Opportunity Name</apex:facet>
+                <apex:outputText value="{!forecast.name}"/>
+            </apex:column>
+            <apex:column >
+                <apex:facet name="header">SF IOID</apex:facet>
+                <apex:outputText value="{!forecast.sf_ioid}"/>
+            </apex:column>
+            <apex:column >
+                <apex:facet name="header">Salesforce ID</apex:facet>
+                <apex:outputText value="{!forecast.id}"/>
+            </apex:column>
+            <apex:repeat value="{!forecast.forecast}" var="forecastListItem">
+                <apex:column headerValue="{!forecastListItem.month}">
+                    <apex:outputText value="{!forecastListItem.amount}" />
+                </apex:column>
+            </apex:repeat>
+            <apex:repeat var="header" value="{!headers}">
+                <apex:column headerValue="{!header}" styleClass="empty-column-content" />
+            </apex:repeat>
+        </apex:dataTable>
+    </apex:pageBlock>
+    <apex:pageBlock title="Forecast Data (US)" id="forecastChartUS">
+        <apex:dataTable value="{!opportunityForecastUS}" var="forecast" rowClasses="odd,even" styleClass="list" width="100%">
+            <apex:column >
+                <apex:facet name="header">Opportunity Name</apex:facet>
+                <apex:outputText value="{!forecast.name}"/>
+            </apex:column>
+            <apex:column >
+                <apex:facet name="header">SF IOID</apex:facet>
+                <apex:outputText value="{!forecast.sf_ioid}"/>
+            </apex:column>
+            <apex:column >
+                <apex:facet name="header">Salesforce ID</apex:facet>
+                <apex:outputText value="{!forecast.id}"/>
+            </apex:column>
+            <apex:repeat value="{!forecast.forecast}" var="forecastListItem">
+                <apex:column headerValue="{!forecastListItem.month}">
+                    <apex:outputText value="{!forecastListItem.amount}" />
+                </apex:column>
+            </apex:repeat>
+            <apex:repeat var="header" value="{!headers}">
+                <apex:column headerValue="{!header}" styleClass="empty-column-content" />
+            </apex:repeat>
+        </apex:dataTable>
+    </apex:pageBlock>
+</apex:page>

@@ -1,0 +1,64 @@
+<apex:page controller="ReportOpportunityForecastBySalesRep" sidebar="true" applyHtmlTag="true" cache="true">
+   <style>
+    .mComponent .cContent table tr td {
+        padding: 3px;
+    }
+    .pbTitle {
+        white-space: nowrap;
+    }
+    body .bPageBlock .pbBody .blue .pbSubheader{
+        background-color:#1487AC;
+    }
+    </style>
+    <apex:stylesheet value="/sCSS/Theme3/default/dashboard.css" />
+    <script>
+    function setFocusOnLoad() {}
+    </script>
+
+    <apex:form id="spendByRepForm">
+        <c:LoadingScreen />
+        
+        <apex:pageBlock title="Spend Forecast By Rep for {!YEAR(TODAY())}" id="spendByRepPageBlock">            
+            <p></p>
+            <apex:chart height="525" width="100%" data="{!forecastByRep}" id="forecastChart">
+                <apex:legend position="bottom" font="9px"/>
+                <apex:axis type="Numeric" position="left" fields="managedAmount,selfServeAmount" title="Forecast Amount ($) (in thousands)" steps="4" />
+                <apex:axis type="Category" position="bottom" fields="employee" title="Employee">
+                    <apex:chartLabel rotate="270" font="9px"/>
+                </apex:axis>
+                <apex:barSeries orientation="vertical" axis="left" xField="employee" yField="managedAmount,selfServeAmount" title="Managed, Self-Serve" stacked="true">
+                    <apex:chartTips height="25" width="190" />
+                </apex:barSeries>
+            </apex:chart>
+            
+            <apex:outputPanel styleClass="mComponent" id="forecastTable">
+                <apex:outputPanel styleClass="cContent">
+                    <apex:dataTable value="{!forecastByRepTable}" var="forecast" rowClasses="odd,even" styleClass="list" width="100%">
+                        <apex:column >
+                            <apex:facet name="header">Employee Name</apex:facet>
+                            <apex:outputText value="{!forecast.employee}" style="{!if(forecast.employee=label,'font-weight: bold', 'font-weight: normal')}" />
+                        </apex:column>
+                        <apex:column >
+                            <apex:facet name="header">Managed Amount</apex:facet>
+                            <apex:outputText value="{0, number, currency}" style="{!if(forecast.employee=label,'font-weight: bold', 'font-weight: normal')}" >
+                                <apex:param value="{!forecast.managedAmount}" />
+                            </apex:outputText>
+                        </apex:column>
+                        <apex:column >
+                            <apex:facet name="header">Self Serve Amount</apex:facet>
+                            <apex:outputText value="{0, number, currency}" style="{!if(forecast.employee=label,'font-weight: bold', 'font-weight: normal')}" >
+                                <apex:param value="{!forecast.selfServeAmount}"  />
+                            </apex:outputText>
+                        </apex:column>
+                         <apex:column >
+                            <apex:facet name="header">Total Amount</apex:facet>
+                            <apex:outputText value="{0, number, currency}" style="{!if(forecast.employee=label,'font-weight: bold', 'font-weight: normal')}" >
+                                <apex:param value="{!forecast.totalSpend}" />
+                            </apex:outputText>
+                        </apex:column>
+                    </apex:dataTable>
+                </apex:outputPanel>
+            </apex:outputPanel>
+            </apex:pageBlock>
+    </apex:form>    
+</apex:page>

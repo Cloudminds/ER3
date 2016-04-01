@@ -1,0 +1,1 @@
+public class AccountDoesNotExistException extends Exception {}

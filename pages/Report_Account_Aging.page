@@ -1,0 +1,23 @@
+<apex:page controller="ReportAccountAging">
+    <style>
+    .mComponent .cContent table tr td {
+        padding: 3px;
+    }
+    </style>
+    <apex:stylesheet value="/sCSS/Theme3/default/dashboard.css" />
+    <apex:outputPanel styleClass="mComponent">
+        <apex:outputPanel styleClass="cContent">
+            <apex:dataTable value="{!agingDataTrimmed}" var="agingDatum" rowClasses="odd,even" styleClass="list" width="100%">
+                <apex:column >
+                    <apex:facet name="header">Account Name</apex:facet>
+                    <!--<apex:outputText value="{!agingDatum.name}"/>-->
+                    <apex:outputLink value="/{!agingDatum.id}">{!agingDatum.name}</apex:outputLink>
+                </apex:column>
+                <apex:column >
+                    <apex:facet name="header">Account Age (days)</apex:facet>
+                    <apex:outputText value="{!agingDatum.age}"/>
+                </apex:column>
+            </apex:dataTable>
+        </apex:outputPanel>
+    </apex:outputPanel>
+</apex:page>

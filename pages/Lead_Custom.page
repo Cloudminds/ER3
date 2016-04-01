@@ -1,0 +1,128 @@
+<apex:page standardController="Lead" extensions="LeadExtension" tabStyle="Lead">
+    <style>
+    .bPageBlock .detailList th.labelCol {
+        width: 25%;
+    }
+    .requiredPicklist {
+        display: block;
+    }
+    </style>
+    <apex:form >
+        <apex:sectionHeader title="Lead Edit" subtitle="{!pageTitle}"/>
+        <apex:pageBlock title="Lead Edit" mode="edit" id="thePage">
+            <apex:pageMessages />
+
+            <!-- PAGE BUTTONS -->
+            <apex:pageBlockButtons >
+                <apex:commandButton value="Save" rerender="thePage" action="{!save}" />
+                <apex:commandButton value="Save & New" action="{!saveNew}" />
+                <apex:commandButton value="Cancel" action="{!cancel}" immediate="true" />
+            </apex:pageBlockButtons>
+            <!-- PAGE BUTTONS END -->
+
+            <!-- LEAD INFORMATION SECTION -->
+            <apex:pageBlockSection columns="2" title="Lead Information">
+                <!-- LEAD INFORMATION LEFT SECTION -->
+                <apex:pageBlockSection columns="1">
+                    <apex:inputField value="{!lead.Company}" required="true" />
+                    <apex:inputField value="{!lead.FirstName}" required="true" />
+                    <apex:inputField value="{!lead.LastName}" required="true" />
+                    <apex:inputField value="{!lead.Email}" required="true" />
+                    <apex:inputField value="{!lead.Title}" />
+                    <apex:inputField value="{!lead.Department__c}" />
+                    <apex:inputField value="{!lead.Phone}" />
+                </apex:pageBlockSection>
+                <!-- LEAD INFORMATION LEFT SECTION END -->
+                <!-- LEAD INFORMATION RIGHT SECTION -->
+                <apex:pageBlockSection columns="1" id="leadInfoRight" >
+                    <apex:outputField value="{!lead.OwnerId}" />
+                    <apex:inputField value="{!lead.Status}" required="true" />
+                    <!-- LEAD SOURCE -->
+                    <apex:pageBlockSectionItem >
+                        <apex:outputLabel value="Lead Source" for="leadSource" />
+                        <apex:outputPanel styleClass="requiredInput requiredPicklist">
+                            <apex:outputPanel styleClass="requiredBlock requiredPicklist"></apex:outputPanel>
+                            <apex:selectList size="1" value="{!selectedLeadSource}" multiselect="false" required="true" id="leadSource">
+                                <apex:selectOptions value="{!leadSources}" />
+                            </apex:selectList>
+                        </apex:outputPanel>
+                    </apex:pageBlockSectionItem>
+                    <!-- LEAD SOURCE END -->
+                    <apex:inputField value="{!lead.Advertiser__c}" />
+                    <apex:inputField value="{!lead.Industry}" />
+                </apex:pageBlockSection>
+                <!-- LEAD INFORMATION RIGHT SECTION END -->
+            </apex:pageBlockSection>
+            <!-- LEAD INFORMATION SECTION END -->
+
+            <!-- ADDRESS INFORMATION SECTION -->
+            <apex:pageBlockSection columns="2" title="Address Information">
+                <apex:pageBlockSection columns="1">
+                    <apex:pageBlockSectionItem >
+                        <apex:outputLabel value="Country" for="country" />
+                        <apex:actionRegion >
+                            <apex:inputField value="{!lead.CountryCode}" id="country" required="true" >
+                                <apex:actionSupport event="onchange" rerender="outputRegionLabelPanel,outputRegionTextPanel,inputRegionLabelPanel,inputRegionTextPanel" action="{!setRegion}" />
+                            </apex:inputField>
+                        </apex:actionRegion>
+                    </apex:pageBlockSectionItem>
+                    <apex:inputField value="{!lead.Street}" />
+                    <apex:inputField value="{!lead.City}" />
+                    <apex:inputField value="{!lead.StateCode}" />
+                    <apex:inputField value="{!lead.PostalCode}" />
+                </apex:pageBlockSection>
+                <apex:pageBlockSection columns="1">
+
+                    <!-- REGION SECTION -->
+                    <apex:pageBlockSectionItem >
+                        <apex:outputPanel id="outputRegionLabelPanel" >
+                            <apex:outputPanel rendered="{!NOT(overrideRegion)}" >
+                                <apex:outputLabel value="Sales Region" for="outputRegion" />
+                            </apex:outputPanel>
+                        </apex:outputPanel>
+                        <apex:outputPanel id="outputRegionTextPanel" >
+                            <apex:outputPanel rendered="{!NOT(overrideRegion)}" >
+                                <apex:outputField value="{!lead.Region__c}" id="outputRegion" />
+                            </apex:outputPanel>
+                        </apex:outputPanel>
+                    </apex:pageBlockSectionItem>
+
+                    <apex:pageBlockSectionItem >
+                        <apex:outputPanel id="inputRegionLabelPanel" >
+                            <apex:outputPanel rendered="{!overrideRegion}" >
+                                <apex:outputLabel value="Sales Region" for="inputRegion" />
+                            </apex:outputPanel>
+                        </apex:outputPanel>
+                        <apex:outputPanel id="inputRegionTextPanel" >
+                            <apex:outputPanel rendered="{!overrideRegion}" >
+                                <apex:inputField value="{!lead.Region__c}" id="inputRegion" />
+                            </apex:outputPanel>
+                        </apex:outputPanel>
+                    </apex:pageBlockSectionItem>
+
+                    <apex:pageBlockSectionItem >
+                        <apex:outputLabel value="Change Region" for="overrideRegion" />
+                        <apex:actionRegion >
+                            <apex:inputCheckbox value="{!overrideRegion}" id="overrideRegion" >
+                                <apex:actionSupport event="onchange" rerender="outputRegionLabelPanel,outputRegionTextPanel,inputRegionLabelPanel,inputRegionTextPanel" action="{!setRegion}" />
+                            </apex:inputCheckbox>
+                        </apex:actionRegion>
+                    </apex:pageBlockSectionItem>
+                <!-- REGION SECTION END -->
+                </apex:pageBlockSection>
+            </apex:pageBlockSection>
+            <!-- ADDRESS INFORMATION SECTION END -->
+
+            <!-- ADDITIONAL INFORMATION SECTION -->
+            <apex:pageBlockSection columns="2" title="Additional Information">
+                <apex:pageBlockSection columns="1">
+                    <apex:inputField value="{!lead.Notes__c}" />
+                </apex:pageBlockSection>
+                <apex:pageBlockSection columns="1">
+                </apex:pageBlockSection>
+            </apex:pageBlockSection>
+            <!-- ADDITIONAL INFORMATION SECTION END -->
+
+        </apex:pageBlock>
+    </apex:form>
+</apex:page>

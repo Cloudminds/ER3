@@ -1,0 +1,115 @@
+<apex:component controller="ReportOpportunityForecast" access="global">
+    <style type="text/css">
+       TH {font-size: 13px; font-face: arial;background: #CCCCCC; border-width: 1; text-align: left} 
+       TD  {font-size: 13px; font-face: verdana; border-width: 1; text-align: left} 
+       TABLE {border: solid #CCCCCC; border-width: 1}
+       TR {border: solid #CCCCCC; border-width: 1; text-align: left}
+    </style>
+    <p>Below is the actual and forecasted spend report for the week of {!TEXT(TODAY())}:</p>
+    <p></p>
+    <p style="font-size:16px"><b>Spend Forecast for {!YEAR(TODAY())} - Canada</b></p>
+    <apex:dataTable value="{!forecastCATable}" var="forecast" rowClasses="odd,even" styleClass="list" width="100%">
+        <apex:column >
+            <apex:facet name="header">Month</apex:facet>
+            <apex:outputText value="{!forecast.month}" rendered="{!forecast.type == 'monthly'}" />
+            <apex:outputText value="{!forecast.month}" style="font-weight: bold;" rendered="{!forecast.type == 'total'}" />
+        </apex:column>
+        <apex:column >
+            <apex:facet name="header">Managed Amount</apex:facet>
+            <apex:outputText value="{0, number, currency}">
+                <apex:param value="{!forecast.managedAmount}" />
+            </apex:outputText>
+        </apex:column>
+        <apex:column rendered="{!NOT(isCumulativeView)}">
+            <apex:facet name="header">Managed (Actual Spend)</apex:facet>
+            <apex:outputText value="{0, number, currency}">
+                <apex:param value="{!forecast.actualSumToDateManaged}" />
+            </apex:outputText>
+        </apex:column>
+        <apex:column >
+            <apex:facet name="header">Self Serve Amount</apex:facet>
+            <apex:outputText value="{0, number, currency}">
+                <apex:param value="{!forecast.selfServeAmount}" />
+            </apex:outputText>
+        </apex:column>
+        <apex:column rendered="{!NOT(isCumulativeView)}">
+            <apex:facet name="header">Self Serve (Actual Spend)</apex:facet>
+            <apex:outputText value="{0, number, currency}">
+                <apex:param value="{!forecast.actualSumToDateSelfServe}" />
+            </apex:outputText>
+        </apex:column>
+        <apex:column >
+            <apex:facet name="header">Creative Amount</apex:facet>
+            <apex:outputText value="{0, number, currency}">
+                <apex:param value="{!forecast.creativeAmount}" />
+            </apex:outputText>
+        </apex:column>
+        <apex:column >
+            <apex:facet name="header">Monthly Total (Forecasted)</apex:facet>
+            <apex:outputText value="{0, number, currency}">
+                <apex:param value="{!forecast.forecastedMonthlyTotal}" />
+            </apex:outputText>
+        </apex:column>
+        <apex:column >
+            <apex:facet name="header">Monthly Total (Actual)</apex:facet>
+            <apex:outputText value="{0, number, currency}">
+                <apex:param value="{!forecast.actualMonthlyTotal}" />
+            </apex:outputText>
+        </apex:column>
+    </apex:dataTable>
+    <p></p>
+    <p></p>
+    <p></p>
+    <p style="font-size:16px"><b>Spend Forecast for {!YEAR(TODAY())} - United States</b></p>
+    <apex:dataTable value="{!forecastUSTable}" var="forecast" rowClasses="odd,even" styleClass="list" width="100%">
+        <apex:column >
+            <apex:facet name="header">Month</apex:facet>
+            <apex:outputText value="{!forecast.month}" rendered="{!forecast.type == 'monthly'}" />
+            <apex:outputText value="{!forecast.month}" style="font-weight: bold;" rendered="{!forecast.type == 'total'}" />
+        </apex:column>
+        <apex:column >
+            <apex:facet name="header">Managed Amount</apex:facet>
+            <apex:outputText value="{0, number, currency}">
+                <apex:param value="{!forecast.managedAmount}" />
+            </apex:outputText>
+        </apex:column>
+        <apex:column rendered="{!NOT(isCumulativeView)}">
+            <apex:facet name="header">Managed (Actual Spend)</apex:facet>
+            <apex:outputText value="{0, number, currency}">
+                <apex:param value="{!forecast.actualSumToDateManaged}" />
+            </apex:outputText>
+        </apex:column>
+        <apex:column >
+            <apex:facet name="header">Self Serve Amount</apex:facet>
+            <apex:outputText value="{0, number, currency}">
+                <apex:param value="{!forecast.selfServeAmount}" />
+            </apex:outputText>
+        </apex:column>
+        <apex:column rendered="{!NOT(isCumulativeView)}">
+            <apex:facet name="header">Self Serve (Actual Spend)</apex:facet>
+            <apex:outputText value="{0, number, currency}">
+                <apex:param value="{!forecast.actualSumToDateSelfServe}" />
+            </apex:outputText>
+        </apex:column>
+        <apex:column >
+            <apex:facet name="header">Creative Amount</apex:facet>
+            <apex:outputText value="{0, number, currency}">
+                <apex:param value="{!forecast.creativeAmount}" />
+            </apex:outputText>
+        </apex:column>
+        <apex:column >
+            <apex:facet name="header">Monthly Total (Forecasted)</apex:facet>
+            <apex:outputText value="{0, number, currency}">
+                <apex:param value="{!forecast.forecastedMonthlyTotal}" />
+            </apex:outputText>
+        </apex:column>
+        <apex:column >
+            <apex:facet name="header">Monthly Total (Actual)</apex:facet>
+            <apex:outputText value="{0, number, currency}">
+                <apex:param value="{!forecast.actualMonthlyTotal}" />
+            </apex:outputText>
+        </apex:column>
+    </apex:dataTable>
+    <p></p>
+    
+</apex:component>

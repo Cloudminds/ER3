@@ -1,0 +1,1 @@
+public class DuplicateOpportunityNameException extends Exception {}

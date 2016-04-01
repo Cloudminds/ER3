@@ -1,0 +1,83 @@
+<apex:page controller="ReportSalesQuotaVsClosed">
+    <apex:includeScript value="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.js" />
+    <apex:includeScript value="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js" />
+    <apex:includeScript value="{!URLFOR($Resource.gaugeChartLibrary, '/d3.js')}" />
+    <apex:styleSheet value="{!URLFOR($Resource.jQueryUI, '/jquery-ui-1.11.1.custom/jquery-ui.css')}" />
+    <apex:includeScript value="{!URLFOR($Resource.gaugeChartLibrary, '/knockout-3.2.0.js')}" />
+    <apex:includeScript value="{!URLFOR($Resource.gaugeChartLibrary, '/globalize.min.js')}" />
+    <apex:includeScript value="{!URLFOR($Resource.gaugeChartLibrary, '/dx.chartjs.js')}" />
+
+    <script>
+    var j$ = jQuery.noConflict();
+    var salesQuota = '{!salesQuota}';
+    var thirdQuota = Math.round(salesQuota/3);
+    var twoThirdsQuota = Math.round((2*salesQuota)/3);
+    var salesActual = '{!salesActual}';
+    
+    //On Page load
+    j$(function() {
+        createBullet('OverallContainer', 'Closed Sales vs. Quota', Number(salesActual).toFixed());
+    });
+
+    function createBullet(divId, title, sales){
+        j$("#" + divId).dxLinearGauge({
+            size: {
+                height: 165
+            },
+            scale: {
+                startValue: 0,
+                endValue: salesQuota,
+                label: {
+                    indentFromTick: 7,
+                    customizeText: function (arg) {
+                        return '$' + arg.valueText;
+                    }
+                },
+                majorTick: {
+                    showCalculatedTicks: false,
+                    customTickValues: [0, thirdQuota, twoThirdsQuota, salesQuota],
+                    color: "#000"           
+                }
+            },
+            title: {
+                text: title + ' for ' + '{!quarter}',
+                font: {
+                    color:'#000',
+                    weight:900,
+                    size: 20
+                }
+            },
+
+            rangeContainer: {
+                backgroundColor: "none",
+                ranges: [
+                    {
+                        startValue: 0,
+                        endValue: thirdQuota,
+                        color: "red"
+                    },
+                    {
+                        startValue: thirdQuota,
+                        endValue: twoThirdsQuota,
+                        color: "orange"
+                    },
+                    {
+                        startValue: twoThirdsQuota,
+                        endValue: salesQuota,
+                        color: "green"
+                    }
+                ]
+            },
+
+            //needles: [{ value: sales, color: "#000"}],      
+            markers: [{ value: sales, color: "#000"}],        
+        });
+    }
+
+    </script> 
+        <div class="Page-Wrap">
+            <div class="First-Line">
+                <div id="OverallContainer" class="Container"></div> 
+            </div>
+        </div>
+</apex:page>

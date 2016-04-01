@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomObjectTranslation xmlns="http://soap.sforce.com/2006/04/metadata">
+    <caseValues>
+        <plural>false</plural>
+        <value>Insertion Order Item</value>
+    </caseValues>
+    <caseValues>
+        <plural>true</plural>
+        <value>Insertion Order Items</value>
+    </caseValues>
+    <fields>
+        <caseValues>
+            <plural>false</plural>
+            <value>Insertion Order Line Currency</value>
+        </caseValues>
+        <name>quotelineitem_currency</name>
+        <startsWith>Vowel</startsWith>
+    </fields>
+    <fields>
+        <caseValues>
+            <plural>false</plural>
+            <value>Insertion Order Line Division</value>
+        </caseValues>
+        <name>quotelineitem_division</name>
+        <startsWith>Vowel</startsWith>
+    </fields>
+    <fields>
+        <caseValues>
+            <plural>false</plural>
+            <value>Insertion Order Line Field</value>
+        </caseValues>
+        <caseValues>
+            <plural>true</plural>
+            <value>Insertion Order Line Fields</value>
+        </caseValues>
+        <name>quotelineitem_field</name>
+        <startsWith>Vowel</startsWith>
+    </fields>
+    <fields>
+        <caseValues>
+            <plural>false</plural>
+            <value>Insertion Order Line Item ID</value>
+        </caseValues>
+        <name>quotelineitem_id</name>
+        <startsWith>Vowel</startsWith>
+    </fields>
+    <fields>
+        <caseValues>
+            <plural>false</plural>
+            <value>Insertion Order Line Item Information</value>
+        </caseValues>
+        <name>quotelineitem_information</name>
+        <startsWith>Vowel</startsWith>
+    </fields>
+    <fields>
+        <caseValues>
+            <plural>false</plural>
+            <value>Opportunities with Insertion Orders and Insertion Order Line Items Report</value>
+        </caseValues>
+        <name>quotelineitem_report</name>
+        <startsWith>Vowel</startsWith>
+    </fields>
+    <startsWith>Vowel</startsWith>
+</CustomObjectTranslation>

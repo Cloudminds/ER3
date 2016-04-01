@@ -1,0 +1,29 @@
+<apex:page controller="ReportOpportunitySalesRepWonAmount">
+    <style>
+    .mComponent .cContent table tr td {
+        padding: 3px;
+    }
+    </style>
+    <apex:stylesheet value="/sCSS/Theme3/default/dashboard.css" />
+    <apex:chart height="350" width="100%" data="{!tableData}" id="dataChart">
+        <apex:axis type="Numeric" position="left" fields="amount" title="Won Amount ($)" steps="4" />
+        <apex:axis type="Category" position="bottom" fields="name" title="Sales Rep">
+            <apex:chartLabel rotate="270"/>
+        </apex:axis>
+        <apex:barSeries orientation="vertical" axis="left" xField="name" yField="amount" />
+    </apex:chart>
+    <apex:outputPanel styleClass="mComponent">
+        <apex:outputPanel styleClass="cContent">
+            <apex:dataTable value="{!tableData}" var="data" rowClasses="odd,even" styleClass="list" width="100%">
+                <apex:column >
+                    <apex:facet name="header">Sales Rep</apex:facet>
+                    <apex:outputText value="{!data.name}"/>
+                </apex:column>
+                <apex:column >
+                    <apex:facet name="header">Amount</apex:facet>
+                    <apex:outputText value="{!data.amount}"/>
+                </apex:column>
+            </apex:dataTable>
+        </apex:outputPanel>
+    </apex:outputPanel>
+</apex:page>

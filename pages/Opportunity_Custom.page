@@ -1,0 +1,603 @@
+<apex:page standardController="Opportunity" extensions="OpportunityExtension" tabStyle="Opportunity" id="opportunityTab" docType="html-5.0" applyHtmlTag="true">
+    <style>
+    .bPageBlock .detailList th.labelCol {
+        width: 25%;
+    }
+    .requiredPicklist {
+        display: block;
+    }
+    .descriptionBox {
+        width: 290px;
+        height: 75px;
+    }
+    .createRecordLink {
+        text-decoration:none;
+        margin-left:0px;
+        padding-left:0px;
+    }
+    </style>
+
+    <script>
+    window.onload = setFocus
+    function setFocus() {
+        document.getElementById("hiddenElement").focus();
+
+        if (document.getElementById('sidebarDiv')){
+            Sidebar.prototype.theSidebar = new Sidebar(document.getElementById('sidebarDiv'), true, false);
+        }
+    }
+    var elementFocus = null;
+    function retainFocus() {
+        elementFocus.focus();
+    }
+    </script>
+
+    <apex:form id="opportunityForm">
+        <c:LoadingScreen />
+        <input id="hiddenElement" type="hidden" />
+        
+        <apex:sectionHeader title="Opportunity Edit" subtitle="{!pageTitle}"/>
+        <apex:pageBlock title="Opportunity Edit" mode="edit" id="opportunityPage">
+            <!-- Set page messages -->
+            <apex:outputPanel id="messages">
+                <apex:pageMessages escape="false" />
+            </apex:outputPanel>
+            
+            <!-- Check client field and set to the apex:param -->
+            <apex:actionRegion >
+                <apex:actionFunction name="isClientFieldEmpty" action="{!refresh}" reRender="oppInfoBlockSectionItemClient,brandListPanel">
+                    <apex:param name="clientCheck" value="" assignTo="{!isClientFieldEmpty}" />
+                </apex:actionFunction>
+            </apex:actionRegion>
+
+            <!-- PAGE BUTTONS -->
+            <apex:pageBlockButtons id="oppPageBlockButtons">               
+                <apex:commandButton value="Save" action="{!save}" status="loadStatus" />
+                <apex:commandButton value="Save & New" action="{!saveNew}" status="loadStatus" />
+                <apex:commandButton value="Save as Draft" action="{!saveDraft}" status="loadStatus" />               
+                <apex:commandButton value="Cancel" action="{!cancel}" immediate="true" status="loadStatus" />
+                <apex:commandButton value="Refresh" oncomplete="isClientFieldEmpty(document.getElementById('{!$Component.opportunityForm.opportunityPage.oppInfoBlock.oppInfoBlockLeftSection.oppInfoBlockSectionItemClient.client}').value == '');" status="loadStatus" rerender="opportunityPage" />
+            </apex:pageBlockButtons>
+            <!-- PAGE BUTTONS END -->
+
+            <!-- OPPORTUNITY INFORMATION SECTION -->
+            <apex:pageBlockSection columns="2" title="Opportunity Information" id="oppInfoBlock">
+                
+                <!-- OPPORTUNITY INFORMATION LEFT SECTION -->
+                <apex:pageBlockSection columns="1" id="oppInfoBlockLeftSection">
+                    
+                    <!-- RECORD TYPE LOGIC -->
+                    <apex:pageBlockSectionItem >
+                        <apex:outputLabel value="Record Type" for="recordType"/>
+                        <apex:outputPanel id="recordTypePanel">
+                            <apex:outputPanel styleClass="requiredInput requiredPicklist">
+                                <apex:actionRegion >
+                                    <apex:outputPanel styleClass="requiredBlock requiredPicklist"/>
+                                    <apex:selectList size="1" value="{!selectedRecordType}" multiselect="false" id="recordType" required="false" >
+                                        <apex:actionSupport event="onchange" rerender="oppInfoBlockLeftSection,invoiceOL,oppInfoBlockRightSection,oppBudgetBlock,erContacts,eyeDemandInfoSection,adServingInfoSection" action="{!updateOppTypeDependencies}" status="loadStatus" onbeforedomupdate="elementFocus = document.activeElement" oncomplete="retainFocus()" />
+                                        <apex:selectOptions value="{!recordTypes}" />
+                                    </apex:selectList>
+                                </apex:actionRegion>
+                            </apex:outputPanel>
+                        </apex:outputPanel>
+                    </apex:pageBlockSectionItem>
+                    <!-- RECORD TYPE LOGIC END -->
+
+                    <!-- STAGE CLOSED LOGIC -->
+                    <apex:pageBlockSectionItem >
+                        <apex:outputLabel value="Stage" for="stage" />
+                        <apex:outputPanel id="stagePanel" >
+                            <apex:outputPanel styleClass="requiredInput requiredPicklist">
+                                <apex:actionRegion >
+                                    <apex:outputPanel styleClass="requiredBlock requiredPicklist"/>
+                                    <apex:selectList size="1" value="{!selectedStage}" multiselect="false" id="stage" required="false">
+                                        <apex:actionSupport event="onchange" rerender="displayBudgetContainer,Saleslead,testClear,mobileBudgetContainer,probability,typePanel,stagePanel,messages,brandListPanel,billingContact,readyToBillDate,reason,reasoncomment" action="{!changeNewStageName}" status="loadStatus" onbeforedomupdate="elementFocus = document.activeElement" oncomplete="retainFocus()" />
+                                        <apex:selectOptions value="{!stages}" />
+                                    </apex:selectList>
+                                </apex:actionRegion>
+                            </apex:outputPanel>
+                        </apex:outputPanel>
+                    </apex:pageBlockSectionItem>
+                    <!-- STAGE CLOSED LOGIC END -->
+
+                    <!-- OPPORTUNITY NAME -->
+                    <apex:pageBlockSectionItem >
+                        <apex:outputLabel value="Opportunity Name" />
+                        <apex:outputPanel styleClass="requiredInput" layout="block">
+                            <apex:outputPanel styleClass="requiredBlock" layout="block"/> 
+                            <apex:inputField value="{!opportunity.Name}" required="false"/>
+                        </apex:outputPanel>
+                    </apex:pageBlockSectionItem>
+                    <!-- OPPORTUNITY NAME END -->
+
+                    <!-- CLIENT -->
+                    <apex:pageBlockSectionItem id="oppInfoBlockSectionItemClient">
+                        <apex:outputLabel value="Client" for="client" />
+                        <apex:outputPanel styleClass="requiredInput" layout="block">
+                            <apex:actionRegion >
+                                <apex:outputPanel styleClass="requiredBlock" layout="block"/> 
+                                <apex:inputField value="{!opportunity.AccountId}" id="client">
+                                    <apex:actionSupport event="onchange" rerender="brandListPanel,regionPanel,currencyPanel,displaySalesRep,secondaryDisplaySalesRep,mobileSalesRep,secondaryMobileSalesRep" action="{!setClient}" status="loadStatus" />
+                                </apex:inputField>
+                            </apex:actionRegion>
+                            <apex:outputLink target="_blank" value="/apex/Account_Custom" title="Opens a new window to create a Client." style="text-decoration:none;margin-left:0px;padding-left:0px;">
+                                <input type="button" class="btn" value='Create Client'></input>
+                            </apex:outputLink>
+                        </apex:outputPanel>
+                    </apex:pageBlockSectionItem>
+                    <!-- CLIENT END-->
+
+                    <!-- BRAND -->
+                    <apex:pageBlockSectionItem >
+                        <apex:outputLabel value="Brand" for="brandPickList"/>
+                        <apex:outputPanel styleClass="{!IF(opportunity.StageName == 'Closed Won', 'requiredInput', '')}" layout="block" id="brandListPanel">
+                            <apex:outputPanel styleClass="{!IF(opportunity.StageName == 'Closed Won', 'requiredBlock', '')}" layout="block"/> 
+                            <apex:actionRegion >
+                                <apex:outputPanel styleClass="{!IF(opportunity.StageName == 'Closed Won','requiredBlock requiredPicklist','')}"/>
+                                <apex:selectList size="1" value="{!selectedBrand}" multiselect="false" label="Brand Picklist" disabled="{!IF(opportunity.AccountId == '', true, false)}">
+                                    <apex:selectOptions value="{!brandPickList}"/>
+                                </apex:selectList>
+                            </apex:actionRegion>
+                            <apex:outputLink target="_blank" value="/apex/Brand_Custom" rendered="{!NOT(opportunity.AccountId == null)}" title="Opens a new window to create a Brand. Click on Refresh to view the changes in the dropdown list." style="text-decoration:none;margin-left:0px;padding-left:0px;">
+                                <input type="button" class="btn" value='Create Brand'></input>
+                                <apex:param name="accid" value="{!opportunity.AccountId}"/>
+                            </apex:outputLink>
+                        </apex:outputPanel>
+                    </apex:pageBlockSectionItem>
+                    <!-- BRAND END -->
+
+                    <!-- CLIENT SALES CONTACT-->
+                    <apex:pageBlockSectionItem >
+                        <apex:outputLabel value="Client Sales Contact" />
+                        <apex:outputPanel id="clientContact" styleClass="requiredInput" layout="block">
+                        
+                           <apex:actionRegion >
+                                <apex:outputPanel styleClass="requiredBlock" layout="block"/> 
+                                <apex:inputField value="{!opportunity.Client_Contact__c}" id="iclientContact">
+                                    <apex:actionSupport event="onchange" rerender="leadSourceOP" action="{!setClientContact}" status="loadStatus" />
+                                </apex:inputField>
+                            </apex:actionRegion>
+                            
+                            <apex:outputLink target="_blank" value="/apex/Contact_Custom" title="Opens a new window to create a Contact." style="text-decoration:none;margin-left:0px;padding-left:0px;">
+                                <input type="button" class="btn" value='Create Contact'></input>
+                            </apex:outputLink>
+
+                        </apex:outputPanel>
+                    </apex:pageBlockSectionItem>
+                    <!-- CLIENT SALES CONTACT END-->
+
+                    <!-- BILLING CONTACT -->
+                    <apex:pageBlockSectionItem >
+                        <apex:outputLabel value="Billing Contact" />
+                        <apex:outputPanel id="billingContact" styleClass="{!IF(selectedRecordType == 'Creative Production' || opportunity.StageName == 'Closed Won', 'requiredInput', '')}" layout="block">
+                            <apex:outputPanel styleClass="requiredBlock" layout="block"/> 
+                            <apex:inputField value="{!opportunity.Billing_Contact__c}" />
+                        </apex:outputPanel>
+                    </apex:pageBlockSectionItem>
+                    <!-- BILLING CONTACT END -->
+
+                </apex:pageBlockSection>
+                <!-- OPPORTUNITY INFORMATION LEFT SECTION END -->
+
+                <!-- OPPORTUNITY INFORMATION RIGHT SECTION -->
+                <apex:pageBlockSection columns="1" id="oppInfoBlockRightSection">
+                    <!-- SF IOID -->
+                    <apex:inputField value="{!opportunity.SF_IOID__c}" rendered="{!NOT(isNew)}"/>
+                    <!-- OPPORTUNITY OWNER -->
+                    <apex:inputField value="{!opportunity.OwnerId}" />
+
+                    <!-- CLOSE DATE -->
+                    <apex:pageBlockSectionItem >
+                        <apex:outputLabel value="Close Date" />
+                        <apex:outputPanel id="closeDate" styleClass="requiredInput" layout="block" >
+                            <apex:outputPanel styleClass="requiredBlock" layout="block" />
+                            <apex:inputField value="{!opportunity.CloseDate}" required="false"/>
+                        </apex:outputPanel>
+                    </apex:pageBlockSectionItem>
+
+                    <!-- READY TO BILL DATE -->
+                    <apex:pageBlockSectionItem rendered="{!selectedRecordType == 'Creative Production'}">
+                        <apex:outputLabel value="Ready To Bill Date" />
+                        <apex:outputPanel id="readyToBillDate" styleClass="requiredBlock" layout="block" >
+                            <apex:outputPanel styleClass="requiredBlock" layout="block" />
+                            <apex:inputField value="{!opportunity.Ready_To_Bill_Date__c}" required="false" rendered="{!opportunity.StageName == 'Ready To Bill'}"/>
+                        </apex:outputPanel>
+                    </apex:pageBlockSectionItem>
+                    <!-- READY TO BILL DATE END -->
+
+                    <!-- CAMPAIGN START DATE -->
+                    <apex:pageBlockSectionItem rendered="{!selectedRecordType != 'Creative Production'}" >
+                        <apex:outputLabel value="Campaign Start Date" for="campaignStartDate" />
+                        <apex:outputPanel id="campaignStartDatePanel" styleClass="requiredInput" layout="block">
+                            <apex:outputPanel styleClass="requiredBlock" layout="block" />
+                            <apex:inputField value="{!opportunity.Campaign_Start_Date__c}" id="campaignStartDate" rendered="{!oldStartDate == null || oldStage != 'Closed Won'}" />
+                            <apex:outputField value="{!opportunity.Campaign_Start_Date__c}" rendered="{!oldStartDate != null && oldStage == 'Closed Won'}" />
+                        </apex:outputPanel>
+                    </apex:pageBlockSectionItem>
+                    <!-- CAMPAIGN START DATE END -->
+
+                    <!-- CAMPAIGN END DATE -->
+                    <apex:pageBlockSectionItem rendered="{!selectedRecordType != 'Creative Production'}" >
+                        <apex:outputLabel value="Campaign End Date" for="campaignEndDate" />
+                        <apex:outputPanel id="campaignEndDatePanel" styleClass="requiredInput" layout="block">
+                            <apex:outputPanel styleClass="requiredBlock" layout="block" />
+                            <apex:inputField value="{!opportunity.Campaign_End_Date__c}" id="campaignEndDate" rendered="{!oldEndDate == null || oldStage != 'Closed Won'}" />
+                            <apex:outputField value="{!opportunity.Campaign_End_Date__c}" rendered="{!oldEndDate != null && oldStage == 'Closed Won'}" />
+                        </apex:outputPanel>
+                    </apex:pageBlockSectionItem>
+                    <!-- CAMPAIGN END DATE END -->
+
+                    <!-- REGION -->
+                    <apex:pageBlockSectionItem >
+                        <apex:outputLabel value="Region"/>
+                        <apex:outputPanel id="regionPanel" styleClass="requiredInput" layout="block">
+                            <apex:outputPanel styleClass="requiredBlock" layout="block" />
+                            <apex:inputField value="{!opportunity.Region__c}" />
+                        </apex:outputPanel>
+                    </apex:pageBlockSectionItem>
+                    <!-- REGION END -->
+
+                    <!-- INDUSTRY -->
+                    <apex:pageBlockSectionItem >
+                        <apex:outputLabel value="Industry" />
+                        <apex:outputPanel id="industryPanel" styleClass="requiredInput" layout="block">
+                            <apex:outputPanel styleClass="requiredBlock" layout="block" />
+                            <apex:inputField value="{!opportunity.Industry__c}" />
+                        </apex:outputPanel>
+                    </apex:pageBlockSectionItem>
+                    <!-- INDUSTRY END -->
+                    
+                    <!-- INVOICE -->
+                    <apex:pageBlockSectionItem >
+                        <apex:outputLabel value="Invoice" rendered="{!selectedRecordType == 'Creative Production'}" id="invoiceOL"/>
+                        <apex:outputPanel id="InvoiceOp"> 
+                            <apex:inputField value="{!opportunity.Invoice__c}" rendered="{!selectedRecordType == 'Creative Production'}" />
+                        </apex:outputPanel>
+                    </apex:pageBlockSectionItem>
+                    <!-- INVOICE END -->
+                    
+                    <!-- DESCRIPTION -->
+                    <apex:pageBlockSectionItem >
+                        <apex:outputLabel value="{!IF(selectedRecordType == 'Creative Production','Details','Description')}" />
+                        <apex:outputPanel id="descriptionPanel" styleClass="requiredInput" layout="block">
+                            <apex:outputPanel styleClass="{!IF(selectedRecordType == 'Creative Production','requiredBlock','')}" layout="block" />
+                            <apex:inputField value="{!opportunity.Description}" styleClass="descriptionBox"/>
+                        </apex:outputPanel>
+                    </apex:pageBlockSectionItem>
+                    <!-- DESCRIPTION END -->                    
+                    
+                </apex:pageBlockSection>
+                <!-- OPPORTUNITY INFORMATION RIGHT SECTION END -->
+            </apex:pageBlockSection>
+            <!-- OPPORTUNITY INFORMATION SECTION END -->
+
+            <!--OPPORTUNITY BUDGET AND DATES SECTION -->
+            <apex:pageBlockSection columns="2" title="Opportunity Budget & Dates" id="oppBudgetBlock">
+                <!--OPPORTUNITY BUDGET AND DATES LEFT SECTION -->
+                <apex:pageBlockSection columns="1" id="oppBudgetBlockLeftSection">
+                    <!-- CURRENCY -->
+                    <apex:pageBlockSectionItem >
+                        <apex:outputLabel value="Currency"/>
+                        <apex:outputPanel id="currencyPanel" styleClass="requiredInput" layout="block">
+                            <apex:outputPanel styleClass="requiredBlock" layout="block" />
+                            <apex:inputField value="{!opportunity.Currency__c}" />
+                        </apex:outputPanel>
+                    </apex:pageBlockSectionItem>
+                    <!-- CURRENCY END -->
+
+                    <!-- TOTAL AMOUNT -->
+                    <apex:pageBlockSectionItem >
+                        <apex:outputLabel value="Total Amount" />
+                        <apex:outputPanel id="totalAmountPanel" styleClass="requiredInput" layout="block">
+                            <apex:outputPanel styleClass="{!IF(selectedRecordType == 'Creative Production','requiredBlock','')}" layout="block" />
+                                <apex:inputField value="{!opportunity.Amount}" rendered="{!selectedRecordType == 'Creative Production'}">
+                                 <apex:actionSupport event="onchange" rerender="reasoncomment,messages" action="{!testCAmount}"/>
+                                 </apex:inputField>
+                                <apex:outputField value="{!opportunity.Amount}" id="totalAmount" rendered="{!selectedRecordType != 'Creative Production'}" />                           
+                        </apex:outputPanel>
+                    </apex:pageBlockSectionItem>
+                    <!-- TOTAL AMOUNT END -->
+
+                    <!-- ORIGINAL OPPORTUNITY START DATE -->
+                    <apex:outputField value="{!opportunity.Original_Opportunity_Start_Date__c}" rendered="{!(oldStage == 'Closed Won' && opportunity.Original_Opportunity_Start_Date__c != opportunity.Campaign_Start_Date__c) && (selectedRecordType != 'Creative Production')}" />
+                    
+                    <!-- ORIGINAL OPPORTUNITY END DATE -->
+                    <apex:outputField value="{!opportunity.Original_Opportunity_End_Date__c}" rendered="{!(oldStage == 'Closed Won' && opportunity.Original_Opportunity_End_Date__c != opportunity.Campaign_End_Date__c) && (selectedRecordType != 'Creative Production')}" />
+                    
+                    <!-- BUDGET CHANGE START DATE -->
+                    <apex:inputField value="{!opportunity.Budget_Change_Start_Date__c}" rendered="{!NOT(isNew) && (oldStage == 'Closed Won') && (selectedRecordType != 'Creative Production')}" />
+                    
+                    <!-- BUDGET CHANGE END DATE -->
+                    <apex:inputField value="{!opportunity.Budget_Change_End_Date__c}" rendered="{!NOT(isNew) && (oldStage == 'Closed Won') && (selectedRecordType != 'Creative Production')}" />
+                    
+                    <!-- DISPLAY BUDGET CHANGE -->
+                    <apex:pageBlockSectionItem rendered="{!NOT(isNew) && (oldStage == 'Closed Won') && (selectedRecordType != 'Creative Production')}" >
+                        <apex:outputLabel value="Display Budget Change" for="displayBudgetChange" />
+                        <apex:actionRegion >
+                            <apex:outputPanel id="displayBudgetChangeContainer" styleClass="requiredInput" layout="block">
+                                <apex:outputPanel styleClass="{!IF(opportunity.Display_Budget_Change_Amount__c != null,'requiredBlock','')}" layout="block" />
+                                <apex:inputField value="{!opportunity.Display_Budget_Change__c}" id="displayBudgetChange" >
+                                    <apex:actionSupport event="onchange" rerender="totalAmount,reason,reasoncomment,messages" action="{!getAmount}" status="loadStatus" onbeforedomupdate="elementFocus = document.activeElement" oncomplete="retainFocus()"/>
+                                </apex:inputField>
+                            </apex:outputPanel>
+                        </apex:actionRegion>
+                    </apex:pageBlockSectionItem>
+                    <!-- DISPLAY BUDGET CHANGE END -->
+
+                    <!-- DISPLAY BUDGET CHANGE AMOUNT -->
+                    <apex:pageBlockSectionItem rendered="{!NOT(isNew) && (oldStage == 'Closed Won') && (selectedRecordType != 'Creative Production')}" >
+                        <apex:outputLabel value="Display Budget Change Amount" for="displayBudgetChangeAmount" />
+                        <apex:actionRegion >
+                            <apex:outputPanel >
+                                <apex:inputField value="{!opportunity.Display_Budget_Change_Amount__c}" id="displayBudgetChangeAmount">
+                                    <apex:actionSupport event="onchange" rerender="totalAmount,displayBudgetChangeContainer,messages" action="{!getAmount}" status="loadStatus" onbeforedomupdate="elementFocus = document.activeElement" oncomplete="retainFocus()" />
+                                </apex:inputField>
+                            </apex:outputPanel>
+                        </apex:actionRegion>
+                    </apex:pageBlockSectionItem>
+                    <!-- DISPLAY BUDGET CHANGE END -->
+
+                    <!-- MOBILE BUDGET CHANGE -->
+                    <apex:pageBlockSectionItem rendered="{!NOT(isNew) && (oldStage == 'Closed Won') && (selectedRecordType != 'Creative Production')}" >
+                        <apex:outputLabel value="Mobile Budget Change" for="mobileBudgetChange" />
+                        <apex:actionRegion >
+                            <apex:outputPanel id="mobileBudgetChangeContainer" styleClass="requiredInput" layout="block">
+                                <apex:outputPanel styleClass="{!IF(opportunity.Mobile_Budget_Change_Amount__c != null,'requiredBlock','')}" layout="block" />
+                                <apex:inputField value="{!opportunity.Mobile_Budget_Change__c}" id="mobileBudgetChange" >
+                                    <apex:actionSupport event="onchange" rerender="totalAmount" action="{!getAmount}" status="loadStatus" onbeforedomupdate="elementFocus = document.activeElement" oncomplete="retainFocus()" />
+                                </apex:inputField>
+                            </apex:outputPanel>
+                        </apex:actionRegion>
+                    </apex:pageBlockSectionItem>
+                    <!-- MOBILE BUDGET CHANGE END -->
+
+                    <!-- MOBILE BUDGET CHANGE AMOUNT -->
+                    <apex:pageBlockSectionItem rendered="{!NOT(isNew) && (oldStage == 'Closed Won') && (selectedRecordType != 'Creative Production')}" >
+                        <apex:outputLabel value="Mobile Budget Change Amount" for="mobileBudgetChangeAmount" />
+                        <apex:actionRegion >
+                            <apex:outputPanel >
+                                <apex:inputField value="{!opportunity.Mobile_Budget_Change_Amount__c}" id="mobileBudgetChangeAmount">
+                                    <apex:actionSupport event="onchange" rerender="totalAmount,mobileBudgetChangeContainer" action="{!getAmount}" status="loadStatus" onbeforedomupdate="elementFocus = document.activeElement" oncomplete="retainFocus()" />
+                                </apex:inputField>
+                            </apex:outputPanel>
+                        </apex:actionRegion>
+                    </apex:pageBlockSectionItem>
+                    <!-- MOBILE BUDGET CHANGE END -->
+                    
+                    
+                </apex:pageBlockSection>
+                <!--OPPORTUNITY BUDGET AND DATES LEFT SECTION END -->
+
+                <!--OPPORTUNITY BUDGET AND DATES RIGHT SECTION -->
+                <apex:pageBlockSection columns="1" id="oppBudgetBlockRightSection">
+
+                    <!-- DISPLAY BUDGET LOGIC -->
+                    <apex:pageBlockSectionItem rendered="{!selectedRecordType != 'Creative Production'}" >
+                        <apex:outputPanel >
+                            <apex:outputLabel value="Display Budget" for="displayBudget" rendered="{!oldStage != 'Closed Won'}" />
+                            <apex:outputLabel value="Original Display Budget" for="displayBudget" rendered="{!oldStage == 'Closed Won'}" />
+                        </apex:outputPanel>
+                        <apex:actionRegion >
+                            <apex:outputPanel id="displayBudgetContainer" styleClass="requiredInput" layout="block">
+                                <apex:outputPanel styleClass="{!IF(opportunity.Mobile_Budget__c == null || opportunity.Mobile_Budget__c == 0,'requiredBlock','')}" layout="block" />
+                                <apex:inputField value="{!opportunity.Display_Budget__c}" id="displayBudget" rendered="{!oldStage != 'Closed Won'}">
+                                    <apex:actionSupport event="onchange" rerender="totalAmount,erContacts,messages" action="{!getAmount}" status="loadStatus" onbeforedomupdate="elementFocus = document.activeElement" oncomplete="retainFocus()" />
+                                </apex:inputField>
+                                <apex:outputField value="{!opportunity.Display_Budget__c}" rendered="{!oldStage == 'Closed Won'}" />
+                            </apex:outputPanel>
+                        </apex:actionRegion>
+                    </apex:pageBlockSectionItem>
+                    <!-- DISPLAY BUDGET LOGIC END -->
+
+                    <!-- MOBILE BUDGET LOGIC -->
+                    <apex:pageBlockSectionItem rendered="{!selectedRecordType != 'Creative Production'}" >
+                        <apex:outputPanel >
+                            <apex:outputLabel value="Mobile Budget" for="mobileBudget" rendered="{!oldStage != 'Closed Won'}" />
+                            <apex:outputLabel value="Original Mobile Budget" for="mobileBudget" rendered="{!oldStage == 'Closed Won'}" />
+                        </apex:outputPanel>
+                        <apex:actionRegion >
+                            <apex:outputPanel id="mobileBudgetContainer">
+                                <apex:inputField value="{!opportunity.Mobile_Budget__c}" id="mobileBudget" rendered="{!oldStage != 'Closed Won'}">
+                                    <apex:actionSupport event="onchange" rerender="totalAmount,erContacts,displayBudgetContainer" action="{!getAmount}" status="loadStatus" onbeforedomupdate="elementFocus = document.activeElement" oncomplete="retainFocus()" />
+                                </apex:inputField>
+                                <apex:outputField value="{!opportunity.Mobile_Budget__c}" rendered="{!oldStage == 'Closed Won'}" />
+                            </apex:outputPanel>
+                        </apex:actionRegion>
+                    </apex:pageBlockSectionItem>
+                    <!-- MOBILE BUDGET LOGIC END -->                   
+                </apex:pageBlockSection>
+                <!--OPPORTUNITY BUDGET AND DATES RIGHT SECTION END -->
+            </apex:pageBlockSection>
+            <!-- OPPORTUNITY BUDGET AND DATES SECTION END -->
+            
+            <!--REASON AND REASON COMMENT SECTION -->
+            <apex:pageBlockSection columns="2" title="Cancelled/Paused Information" id="reRecommentInfo">     
+            
+             <!-- REASON START -->  
+            <apex:pageBlockSection columns="1">           
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="Reason" />
+                        <apex:outputPanel styleClass="{!IF(showrequired==true,'requiredBlock requiredInput','')}" id="reason">
+                            <apex:actionRegion >
+                                <apex:outputPanel styleClass="{!IF(showrequired==true,'requiredBlock requiredInput','')}" />
+                                <apex:outputPanel styleClass="{!IF(showrequired==true,'requiredBlock','')}"  />
+                                <apex:inputField value="{!opportunity.Reason__c}"/>
+                            </apex:actionRegion>
+                        </apex:outputPanel>
+                </apex:pageBlockSectionItem>                
+             </apex:pageBlockSection>
+             <!-- REASON END --> 
+            
+            <!-- REASON COMMENT START -->           
+            <apex:pageBlockSection columns="1">                           
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="Reason Comment" />
+                        <apex:outputPanel styleclass="{!IF(showrequired==true,'requiredInput','')}"  id="reasoncomment" >
+                            <apex:outputPanel styleClass="{!IF(showrequired==true,'requiredBlock','')}"/>
+                            <apex:inputField value="{!opportunity.Reason_Comment__c}" label="{!$ObjectType.Opportunity.Fields.Reason_Comment__c.InlineHelpText}" />
+                    </apex:outputPanel>
+                </apex:pageBlockSectionItem>
+            </apex:pageBlockSection>
+           <!-- REASON COMMENT END -->         
+               
+            </apex:pageBlockSection> 
+            <!-- REASON AND REASON COMMENT END -->      
+                         
+            <!-- EYECONTROL INFORMATION -->
+            <apex:outputPanel id="eyeDemandInfoSection">
+                <apex:outputPanel rendered="{!selectedRecordType == 'eyeDemand'}">
+                    <apex:pageBlockSection columns="2" title="eyeControl Information">
+                        <apex:pageBlockSection columns="1">
+                            <apex:outputField label="eyeControl Spend Total" value="{!opportunity.Total_Spend_MTD__c}" />
+                            <apex:outputField label="eyeControl Spend (Current Month)" value="{!opportunity.Current_Month_Spend__c}" />
+                            <apex:outputField label="eyeControl Spend (Prev. Months)" value="{!opportunity.Prev_Month_Spend__c}" />
+                        </apex:pageBlockSection>
+                        <apex:pageBlockSection columns="1">
+                            <apex:outputField label="eyeControl Start Date" value="{!opportunity.Actual_Start_Date_DEPRECATED__c}" />
+                            <apex:outputField label="eyeControl End Date"  value="{!opportunity.Actual_End_Date_DEPRECATED__c}" />
+                        </apex:pageBlockSection>
+                    </apex:pageBlockSection>
+                </apex:outputPanel>
+            </apex:outputPanel>
+            <!-- EYECONTROL INFORMATION END -->
+            
+            <!-- ADSERVING INFORMATION -->
+             <apex:outputPanel id="adServingInfoSection">
+                <apex:outputPanel rendered="{!selectedRecordType == 'Adserving'}">
+                    <apex:pageBlockSection columns="2" title="adServing Information">
+                        <apex:pageBlockSection columns="1">
+                            <apex:inputField label="Title" value="{!opportunity.adServing_Title__c}" />
+                            <apex:outputField label="Ratecard ID (FK)" value="{!opportunity.adServing_Ratecard_ID_FK__c}" />
+                            <apex:inputField label="Campaign Budget" value="{!opportunity.adServing_Campaign_Budget__c}" />
+                            <apex:inputField label="Negotiated Flat Rate" value="{!opportunity.adServing_Negotiated_Flat_Rate__c}" />
+                            <apex:inputField label="Number of Orion Tags" value="{!opportunity.adServing_Number_of_Orion_Tags__c}" />
+                            <apex:inputField label="Setup Fee" value="{!opportunity.adServing_Setup_Fee__c}" />
+                            <apex:inputField label="Swap Fee" value="{!opportunity.adServing_Swap_Fee__c}" />
+                            <apex:inputField label="Custom Fee" value="{!opportunity.adServing_Custom_Fee__c}" />
+                            <apex:inputField label="Custom Fee Label" value="{!opportunity.adServing_Custom_Fee_Label__c}" />
+                        </apex:pageBlockSection>
+                        <apex:pageBlockSection columns="1">
+                            <apex:inputField label="Bonus Impressions" value="{!opportunity.adServing_Bonus_Impressions__c}" />
+                            <apex:inputField label="Bonus Rate"  value="{!opportunity.adServing_Bonus_Rate__c}" />
+                            <apex:inputField label="Bonus Total"  value="{!opportunity.adServing_Bonus_Total__c}" />
+                            <apex:inputField label="PO Number"  value="{!opportunity.adServing_PO_Number__c}" />
+                            <apex:inputField label="Trafficker Hour"  value="{!opportunity.adServing_Trafficker_Hour__c}" />
+                            <apex:inputField label="Bill on Actual"  value="{!opportunity.adServing_Bill_on_Actual__c}" />
+                            <apex:inputField label="Manual IO"  value="{!opportunity.adServing_Manual_IO__c}" />
+                            <apex:inputField label="Waive Minimum Fee"  value="{!opportunity.adServing_Waive_Minimum_Fee__c}" />
+                            <apex:inputField label="Prepaid"  value="{!opportunity.adServing_Prepaid__c}" />
+                        </apex:pageBlockSection>
+                    </apex:pageBlockSection>
+                </apex:outputPanel>
+            </apex:outputPanel>
+            <!-- ADSERVING INFORMATION END -->
+            
+            <!-- EYERETURN CONTACTS SECTION -->
+            <apex:pageBlockSection columns="2" title="eyeReturn Contacts" id="erContacts">
+                <!-- EYERETURN CONTACTS LEFT SECTION -->
+                <apex:pageBlockSection columns="1">
+                    <!-- DISPLAY SALES -->
+                    <apex:pageBlockSectionItem >
+                        <apex:outputLabel value="{!IF(selectedRecordType == 'Creative Production','Primary Sales Rep', 'Primary Sales Rep - Display')}" for="displaySalesRep" />
+                        <apex:outputPanel id="primaryDisplaySalesRepContainer" >
+                            <apex:outputPanel styleClass="requiredInput requiredPicklist" rendered="{!((opportunity.Display_Budget__c != null && opportunity.Display_Budget__c > 0) || (selectedRecordType == 'Creative Production'))}">
+                                <apex:outputPanel styleClass="{!IF((opportunity.Display_Budget__c != null && opportunity.Display_Budget__c > 0),'requiredBlock requiredPicklist','')}" layout="block" />
+                                <apex:selectList size="1" value="{!selectedDisplayRep}" multiselect="false" id="displaySalesRep">
+                                    <apex:selectOptions value="{!salesRepsDisplay}" />
+                                </apex:selectList>
+                            </apex:outputPanel>
+                        </apex:outputPanel>   
+                    </apex:pageBlockSectionItem>
+                    <!-- DISPLAY SALES END -->
+                    
+                    <!-- SECONDARY DISPLAY SALES -->
+                    <apex:pageBlockSectionItem >
+                        <apex:outputLabel value="{!IF(selectedRecordType == 'Creative Production','Secondary Sales Rep','Secondary Sales Rep - Display')}" for="secondaryDisplaySalesRep" />
+                        <apex:outputPanel id="secondaryDisplaySalesRepContainer" >
+                            <apex:selectList size="1" value="{!selectedSecondaryDisplayRep}" multiselect="false" id="secondaryDisplaySalesRep" rendered="{!((opportunity.Display_Budget__c != null && opportunity.Display_Budget__c > 0) || (selectedRecordType == 'Creative Production'))}">
+                                <apex:selectOptions value="{!secondarySalesRepsDisplay}" />
+                            </apex:selectList>
+                        </apex:outputPanel>
+                    </apex:pageBlockSectionItem>
+                    <!-- SECONDARY DISPLAY SALES END -->
+
+                    <!-- MOBILE SALES -->    
+                    <apex:pageBlockSectionItem rendered="{!NOT(selectedRecordType == 'Creative Production')}" >
+                        <apex:outputLabel value="Primary Sales Rep - Mobile" for="mobileSalesRep" />
+                        <apex:outputPanel id="primaryMobileSalesRepContainer">
+                            <apex:outputPanel styleClass="requiredInput requiredPicklist" rendered="{!((opportunity.Mobile_Budget__c != null && opportunity.Mobile_Budget__c > 0) || (selectedRecordType == 'Creative Production'))}">
+                                <apex:outputPanel styleClass="{!IF((opportunity.Mobile_Budget__c != null && opportunity.Mobile_Budget__c > 0),'requiredBlock requiredPicklist','')}" />
+                                <apex:selectList size="1" value="{!selectedMobileRep}" multiselect="false" id="mobileSalesRep">
+                                    <apex:selectOptions value="{!salesRepsMobile}" />
+                                </apex:selectList>
+                            </apex:outputPanel>
+                        </apex:outputPanel>
+                    </apex:pageBlockSectionItem>
+                    <!-- MOBILE SALES END -->
+                    
+                    <!-- SECONDARY MOBILE SALES -->
+                    <apex:pageBlockSectionItem rendered="{!NOT(selectedRecordType == 'Creative Production')}" >
+                        <apex:outputLabel value="Secondary Sales Rep - Mobile" for="secondaryMobileSalesRep" />
+                        <apex:outputPanel id="secondaryMobileSalesRepContainer" >
+                            <apex:selectList size="1" value="{!selectedSecondaryMobileRep}" multiselect="false" id="secondaryMobileSalesRep" rendered="{!((opportunity.Mobile_Budget__c != null && opportunity.Mobile_Budget__c > 0) || (selectedRecordType == 'Creative Production'))}">
+                                <apex:selectOptions value="{!secondarySalesRepsMobile}" />
+                            </apex:selectList>
+                        </apex:outputPanel>
+                    </apex:pageBlockSectionItem>
+                    <!-- SECONDARY MOBILE SALES END -->
+
+                    <!-- ANALYSTS -->
+                    <apex:pageBlockSectionItem rendered="{!opportunity.Opportunity_Analyst__c != null && selectedRecordType != 'Creative Production'}" >
+                        <apex:outputLabel value="Opportunity Analyst" for="analyst" />
+                        <apex:outputField value="{!opportunity.Opportunity_Analyst__c}" id="analyst"/>
+                    </apex:pageBlockSectionItem>
+                    <!-- ANALYSTS END -->
+
+                </apex:pageBlockSection>
+                <!-- EYERETURN CONTACTS LEFT SECTION END -->
+
+                <!-- EYERETURN CONTACTS RIGHT SECTION -->
+                <apex:pageBlockSection columns="1" id="erContactsRightCol" >
+                    <!-- ACCOUNT MANAGER -->
+                        <c:MultiselectPicklist id="amPicklistComp" leftLabel="Available Account Managers"
+                                leftOption="{!allAMs}"
+                                rightLabel="Selected Account Managers"
+                                rightOption="{!selectedAMs}"
+                                size="12"
+                                width="180px" 
+                                showUpDownButtons="false">
+                        </c:MultiselectPicklist>
+                    <!-- ACCOUNT MANAGER END -->
+                </apex:pageBlockSection>
+                <!-- EYERETURN CONTACTS RIGHT SECTION END -->
+            </apex:pageBlockSection>
+            <!-- EYERETURN CONTACTS SECTION END -->
+
+            <!-- ADDITIONAL INFORMATION SECTION -->
+            <apex:pageBlockSection columns="2" title="Additional Information">
+                <apex:pageBlockSection columns="1" id="PBSLeadSOurce">
+                    <!-- LEAD SOURCE START -->
+                    <apex:pageBlockSectionItem >
+                        <apex:outputLabel value="Lead Source" for="leadSource" />
+                        <apex:outputPanel styleClass="requiredInput requiredPicklist" id="leadSourceOP">
+                            <apex:outputPanel styleClass="requiredBlock requiredPicklist" id="leadSourceOP2"></apex:outputPanel>
+                            <apex:selectList size="1" value="{!selectedLeadSource}" multiselect="false" id="leadSource" label="Lead Source">
+                                <apex:selectOptions value="{!leadSources}" />
+                            </apex:selectList>
+                        </apex:outputPanel>
+                    </apex:pageBlockSectionItem>
+                    <!-- LEAD SOURCE END -->                    
+                 </apex:pageBlockSection>
+
+                <apex:pageBlockSection columns="1">
+                    <!-- CLIENT PO -->
+                    <apex:inputField value="{!opportunity.Client_PO__c}" />
+                    <!-- CID - DEPRECATED -->
+                    <apex:outputField value="{!opportunity.CID__c}" />
+                </apex:pageBlockSection>
+            </apex:pageBlockSection>
+            <!-- ADDITIONAL INFORMATION SECTION END -->
+
+        </apex:pageBlock>
+    </apex:form>
+</apex:page>

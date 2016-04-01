@@ -1,0 +1,1 @@
+public class MissingOpportunityDetailException extends Exception {}

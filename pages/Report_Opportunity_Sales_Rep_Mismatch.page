@@ -1,0 +1,38 @@
+<apex:page controller="ReportOpportunitySalesRepMismatch" readOnly="true">
+    <style>
+    .mComponent .cContent table tr td {
+        padding: 3px;
+    }
+    </style>
+    <apex:stylesheet value="/sCSS/Theme3/default/dashboard.css" />
+    <apex:outputPanel styleClass="mComponent">
+        <apex:outputPanel styleClass="cContent">
+            <apex:dataTable value="{!mismatchData}" var="mismatch" rowClasses="odd,even" styleClass="list" width="100%">
+                <apex:column >
+                    <apex:facet name="header">Opp. Name</apex:facet>
+                    <apex:outputText value="{!mismatch.opportunityName}"/>
+                </apex:column>
+                <apex:column >
+                    <apex:facet name="header">Opp. Type</apex:facet>
+                    <apex:outputText value="{!mismatch.opportunityType}"/>
+                </apex:column>
+                <apex:column >
+                    <apex:facet name="header">Acc. Name</apex:facet>
+                    <apex:outputText value="{!mismatch.accountName}"/>
+                </apex:column>
+                <apex:column >
+                    <apex:facet name="header">Acc. Sales Rep</apex:facet>
+                    <apex:outputText value="{!mismatch.accountSalesRep}"/>
+                </apex:column>
+                <apex:column >
+                    <apex:facet name="header">Opp. Display Sales Rep</apex:facet>
+                    <apex:outputText value="{!mismatch.opportunitySalesRepDisplay}"/>
+                </apex:column>
+                <apex:column >
+                    <apex:facet name="header">Opp. Mobile Sales Rep</apex:facet>
+                    <apex:outputText value="{!mismatch.opportunitySalesRepMobile}"/>
+                </apex:column>
+            </apex:dataTable>
+        </apex:outputPanel>
+    </apex:outputPanel>
+</apex:page>

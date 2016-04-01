@@ -1,0 +1,69 @@
+<apex:page controller="ReportOpportunityRFPForecast" id="rfpCanadaVFPage" readOnly="true" cache="true">
+    <style>
+    .mComponent .cContent table tr td {
+        padding: 3px;
+    }
+    .pbTitle {
+        white-space: nowrap;
+    }
+    body .bPageBlock .pbBody .blue .pbSubheader{
+        background-color:#1487AC;
+    }
+    .currentMonthStyle {
+        font-weight: bold;
+        background-color:#FFDB58;
+    }
+    </style>
+    <apex:stylesheet value="/sCSS/Theme3/default/dashboard.css" />
+    <script>
+    function setFocusOnLoad() {}
+    </script>
+    <apex:form id="rfpCanadaForm">
+        <c:LoadingScreen />
+        
+        <apex:pageBlock title="Proposal Pipeline for {!YEAR(TODAY())} - Canada" id="rfpCanadaPageBlock">            
+            <p></p>
+            <apex:chart height="350" width="100%" data="{!forecastCA}" id="forecastChart">
+                <apex:legend position="bottom" font="10px" />
+                <apex:axis type="Numeric" position="left" fields="displayAmount,mobileAmount" title="$ Amount (in thousands)" steps="4" />
+                <apex:axis type="Category" position="bottom" fields="month" title="Month">
+                    <apex:chartLabel rotate="270" font="10px"/>
+                </apex:axis>
+                <apex:barSeries orientation="vertical" axis="left" xField="month" yField="displayAmount,mobileAmount" title="Display,Mobile" stacked="false">
+                    <apex:chartTips height="25" width="170" />
+                </apex:barSeries>
+            </apex:chart>
+            
+            <apex:outputPanel styleClass="mComponent" id="forecastTable">
+                <apex:outputPanel styleClass="cContent">
+                    <apex:dataTable value="{!forecastCATable}" var="forecast" rowClasses="odd,even" styleClass="list" width="100%">
+                        <apex:column styleClass="{!IF(forecast.month == todayMonthInText, 'currentMonthStyle', '')}">
+                            <apex:facet name="header">Month</apex:facet>
+                            <apex:outputText value="{!forecast.month}" rendered="{!forecast.type == 'monthly'}" />
+                            <apex:outputText value="{!forecast.month}" style="font-weight: bold;" rendered="{!forecast.type == 'total'}" />
+                        </apex:column>
+                        <apex:column styleClass="{!IF(forecast.month == todayMonthInText, 'currentMonthStyle', '')}">
+                            <apex:facet name="header">Display Amount</apex:facet>
+                            <apex:outputText value="{0, number, currency}">
+                                <apex:param value="{!forecast.displayAmount}" />
+                            </apex:outputText>
+                        </apex:column>
+                        <apex:column styleClass="{!IF(forecast.month == todayMonthInText, 'currentMonthStyle', '')}">
+                            <apex:facet name="header">Mobile Amount</apex:facet>
+                            <apex:outputText value="{0, number, currency}">
+                                <apex:param value="{!forecast.mobileAmount}" />
+                            </apex:outputText>
+                        </apex:column>
+                         <apex:column styleClass="{!IF(forecast.month == todayMonthInText, 'currentMonthStyle', '')}">
+                            <apex:facet name="header">Monthly Total</apex:facet>
+                            <apex:outputText value="{0, number, currency}">
+                                <apex:param value="{!forecast.monthlyTotal}" />
+                            </apex:outputText>
+                        </apex:column>
+                    </apex:dataTable>
+                    *A win rate of 80% was applied to the campaign budget
+                </apex:outputPanel>
+            </apex:outputPanel>
+        </apex:pageBlock>
+    </apex:form>
+</apex:page>

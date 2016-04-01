@@ -1,0 +1,309 @@
+<apex:page standardController="Account" extensions="AccountExtension,AutoCompleteController" tabStyle="Account">
+    <apex:includeScript value="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js" />
+    <apex:includeScript value="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.21/jquery-ui.min.js" />
+    <apex:includeScript value="{!URLFOR($Resource.jQueryValidate, '/dist/jquery.validate.min.js')}" />
+    <apex:styleSheet value="{!URLFOR($Resource.jQueryUI, '/jquery-ui-1.11.1.custom/jquery-ui.css')}" />
+
+    <style>
+        .bPageBlock .detailList th.labelCol {
+            width: 25%;
+        }
+        .requiredPicklist {
+            display: block;
+        }
+        .displayNone {
+            display:none;
+        }
+        .displayBlock {
+            display:block;
+        }
+        .ui-autocomplete-loading {
+            background: white url(/img/loading32.gif) right center no-repeat;
+            background-size:15px 15px;
+        }
+        .placeHolder {
+            font-style: italic;
+        }
+    </style>
+    <script>
+        var elementFocus = null;
+        function retainFocus() {
+            elementFocus.focus();
+        }
+        
+        var validate;
+        function runValidation(){
+            validate = $('[id$=accountForm]').validate();
+            $('[id$=accountName]').rules("add",{
+                required: true
+            });   
+            $('[id$=accountCurrency]').rules("add",{
+                required: true
+            });   
+            $('[id$=accountBillingCountry]').rules("add",{
+                required: true
+            });   
+            $('[id$=accountBillingState]').rules("add",{
+                required: true
+            });   
+            $('[id$=accountRegion]').rules("add",{
+                required: true
+            });  
+            jQuery.validator.messages.required = "You must enter a value"; 
+        };
+
+        function cancelValidation(){
+            validate = $('[id$=accountForm]').validate();
+            validate.settings.rules =  null;
+            console.log(validate.settings);
+        }
+    </script>
+    <apex:form id="accountForm" >
+        <apex:sectionHeader title="Account Edit" subtitle="{!pageTitle}"/>
+        <apex:pageBlock title="Account Edit" mode="edit" id="thePage">
+            <apex:outputPanel id="accountMessages">
+                <apex:pageMessages />
+            </apex:outputPanel>
+
+            <!-- PAGE BUTTONS -->
+            <apex:pageBlockButtons >
+                <apex:commandButton value="Save" action="{!save}" onclick="runValidation();" />
+                <apex:commandButton value="Save & New" action="{!saveNew}" onclick="runValidation();" />
+                <apex:commandButton value="Cancel" action="{!cancel}" immediate="true" onclick="cancelValidation();"/>
+            </apex:pageBlockButtons>
+            <!-- PAGE BUTTONS END -->
+
+            <!-- ACCOUNT INFORMATION SECTION -->
+            <apex:pageBlockSection columns="2" title="Account Information">
+                <!-- ACCOUNT INFORMATION LEFT SECTION -->
+                <apex:pageBlockSection columns="1">
+                    <apex:outputField value="{!account.OwnerId}" />
+                    <apex:pageBlockSectionItem >
+                        <apex:outputLabel value="Account Name" />
+                        <apex:outputPanel styleClass="requiredInput" layout="block">
+                        <apex:outputPanel styleClass="requiredBlock" layout="block"/> 
+                            <apex:inputField value="{!account.Name}" id="accountName"/>
+                        </apex:outputPanel>
+                    </apex:pageBlockSectionItem>
+                    <apex:inputField value="{!account.Legal_Name__c}" />
+                    <!--<apex:inputField value="{!account.Account_Currency__c}" required="true"/>-->
+                    <apex:pageBlockSectionItem >
+                        <apex:outputLabel value="Account Currency" />
+                        <apex:outputPanel styleClass="requiredInput" layout="block">
+                            <apex:outputPanel styleClass="requiredBlock" layout="block"/> 
+                            <apex:inputField value="{!account.Account_Currency__c}" id="accountCurrency"/>
+                        </apex:outputPanel>
+                    </apex:pageBlockSectionItem>
+                    <apex:inputField value="{!account.Website}" />
+                    <apex:inputField value="{!account.Description}" />
+                </apex:pageBlockSection>
+                <!-- ACCOUNT INFORMATION LEFT SECTION END -->
+
+                <!-- ACCOUNT INFORMATION RIGHT SECTION -->
+                <apex:pageBlockSection columns="1">
+                    <apex:outputField value="{!account.Org_ID__c}" />
+                    <!-- ADSERVING SALES -->
+                    <apex:pageBlockSectionItem >
+                        <apex:outputLabel value="Sales Rep - Ad Serving" />
+                        <apex:outputPanel styleClass="requiredInput requiredPicklist">
+                            <apex:outputPanel styleClass="requiredBlock requiredPicklist"/>
+                            <apex:selectList size="1" value="{!selectedAdServingRep}" multiselect="false" required="true">
+                                <apex:selectOptions value="{!salesRepsAdServing}" />
+                            </apex:selectList>
+                        </apex:outputPanel>
+                    </apex:pageBlockSectionItem>
+                    <!-- ADSERVING SALES END -->
+                    <!-- EYEDEMAND SALES -->
+                    <apex:pageBlockSectionItem >
+                        <apex:outputLabel value="Sales Rep - eyeDemand" />
+                        <apex:outputPanel styleClass="requiredInput requiredPicklist">
+                            <apex:outputPanel styleClass="requiredBlock requiredPicklist"/>
+                            <apex:selectList size="1" value="{!selectedEyeDemandRep}" multiselect="false" required="true" >
+                                <apex:selectOptions value="{!salesRepsEyeDemand}" />
+                            </apex:selectList>
+                        </apex:outputPanel>
+                    </apex:pageBlockSectionItem>
+                    <!-- EYEDEMAND SALES END -->
+                    <!-- ANALYST -->
+                    <apex:pageBlockSectionItem >
+                        <apex:outputLabel value="Analyst" />
+                        <apex:selectList size="1" value="{!selectedAnalyst}" multiselect="false">
+                            <apex:selectOptions value="{!analystList}" />
+                        </apex:selectList>
+                    </apex:pageBlockSectionItem>
+                    <!-- ANALYST -->
+                    <!-- EYEVERIFY -->
+                    <apex:pageBlockSectionItem >
+                        <apex:outputLabel value="Enable eyeVerify"/>
+                        <apex:inputCheckbox value="{!account.Enable_eyeVerify__c}"/>
+                    </apex:pageBlockSectionItem>
+                    <!-- EYEVERIFY -->
+                </apex:pageBlockSection>
+                <!-- ACCOUNT INFORMATION RIGHT SECTION END -->
+            </apex:pageBlockSection>
+            <!-- ACCOUNT INFORMATION SECTION END -->
+
+            <!-- ADDRESS INFORMATION SECTION -->
+            <apex:pageBlockSection columns="2" title="Address Information">
+                <!-- ADDRESS INFORMATION LEFT SECTION -->
+                <apex:pageBlockSection columns="1">
+                    <!--<apex:inputField value="{!account.BillingCountryCode}" label="Country" required="true" />-->
+                    <apex:pageBlockSectionItem >
+                        <apex:outputLabel value="Country" />
+                        <apex:outputPanel styleClass="requiredInput" layout="block">
+                            <apex:outputPanel styleClass="requiredBlock" layout="block"/> 
+                            <apex:inputField value="{!account.BillingCountryCode}" id="accountBillingCountry"/>
+                        </apex:outputPanel>
+                    </apex:pageBlockSectionItem>
+                    <apex:inputField value="{!account.BillingStreet}" label="Street" />
+                    <apex:inputField value="{!account.BillingCity}" label="City" />
+                    <!--<apex:inputField value="{!account.BillingStateCode}" label="State/Province" required="true" />-->
+                    <apex:pageBlockSectionItem >
+                        <apex:outputLabel value="State/Province" />
+                        <apex:outputPanel styleClass="requiredInput" layout="block">
+                            <apex:outputPanel styleClass="requiredBlock" layout="block"/> 
+                            <apex:inputField value="{!account.BillingStateCode}" id="accountBillingState"/>
+                        </apex:outputPanel>
+                    </apex:pageBlockSectionItem>
+                    <apex:inputField value="{!account.BillingPostalCode}" label="Zip/PostalCode" />
+                </apex:pageBlockSection>
+                <!-- ADDRESS INFORMATION LEFT SECTION END -->
+
+                <!-- ADDRESS INFORMATION RIGHT SECTION -->
+                <apex:pageBlockSection columns="1">
+                    <apex:inputField value="{!account.Phone}" />
+                    <!--<apex:inputField value="{!account.Region__c}" required="true" />-->
+                    <apex:pageBlockSectionItem >
+                        <apex:outputLabel value="Account Region" />
+                        <apex:outputPanel styleClass="requiredInput" layout="block">
+                            <apex:outputPanel styleClass="requiredBlock" layout="block"/> 
+                            <apex:inputField value="{!account.Region__c}" id="accountRegion"/>
+                        </apex:outputPanel>
+                    </apex:pageBlockSectionItem>
+                </apex:pageBlockSection>
+                <!-- ADDRESS INFORMATION RIGHT SECTION END -->
+            </apex:pageBlockSection>
+            <!-- ACCOUNT CONTACTS SECTION END -->
+
+            <!-- CREDIT APP INFORMATION SECTION -->
+            <apex:pageBlockSection columns="2" title="Credit App Information">
+                <!-- CREDIT APP INFORMATION LEFT SECTION -->
+                <apex:pageBlockSection columns="1" id="creditAppInfoSectionForAdminLeft" rendered="{!isAdmin}">
+                    <apex:pageBlockSectionItem >
+                        <apex:outputLabel value="Credit App Approved" for="creditAppApproved"/>
+                        <apex:actionRegion >
+                            <apex:inputCheckbox value="{!account.Credit_App_Approved__c}"  disabled="{!account.Credit_Card__c}" id="creditAppApproved">
+                                <apex:actionSupport event="onchange" rerender="creditAppInfoSectionForAdminLeft" />
+                            </apex:inputCheckbox>
+                        </apex:actionRegion>
+                    </apex:pageBlockSectionItem>
+                    <apex:pageBlockSectionItem >
+                        <apex:outputLabel value="Credit Card" for="creditCard"/>
+                        <apex:actionRegion >
+                            <apex:inputCheckbox value="{!account.Credit_Card__c}" disabled="{!account.Credit_App_Approved__c}" id="creditCard">
+                                <apex:actionSupport event="onchange" rerender="creditAppInfoSectionForAdminLeft" />
+                            </apex:inputCheckbox>
+                        </apex:actionRegion>
+                    </apex:pageBlockSectionItem>
+                    <apex:pageBlockSectionItem >
+                        <apex:outputLabel value="Ad Serving Agreement Signed" for="adservingAgreement"/>
+                        <apex:inputField value="{!account.Ad_Serving_Agreement_Signed__c}" id="adservingAgreement"/>
+                    </apex:pageBlockSectionItem>
+                </apex:pageBlockSection>
+                
+                <apex:pageBlockSection columns="1" id="creditAppInfoSectionForNonAdminLeft" rendered="{!NOT(isAdmin)}">
+                    <apex:pageBlockSectionItem >
+                        <apex:outputLabel value="Credit App Approved"/>
+                        <apex:outputField value="{!account.Credit_App_Approved__c}"/>
+                    </apex:pageBlockSectionItem>
+                    <apex:pageBlockSectionItem >
+                        <apex:outputLabel value="Credit Card"/>
+                        <apex:outputField value="{!account.Credit_Card__c}" />
+                    </apex:pageBlockSectionItem>
+                    <apex:pageBlockSectionItem >
+                        <apex:outputLabel value="Credit Limit"/>
+                        <apex:outputField value="{!account.Credit_Limit__c}" />
+                    </apex:pageBlockSectionItem>
+                    <apex:pageBlockSectionItem >
+                        <apex:outputLabel value="Ad Serving Agreement Signed"/>
+                        <apex:outputField value="{!account.Ad_Serving_Agreement_Signed__c}" />
+                    </apex:pageBlockSectionItem>                    
+                </apex:pageBlockSection>
+                <!-- CREDIT APP INFORMATION LEFT SECTION END-->
+
+                <!-- CREDIT APP INFORMATION RIGHT SECTION -->
+                <apex:pageBlockSection columns="1" id="creditAppInfoSectionForAdminRight" rendered="{!isAdmin}">
+                    <apex:pageBlockSectionItem >
+                        <apex:outputLabel value="Credit Limit" for="creditLimit"/>
+                        <apex:inputField value="{!account.Credit_Limit__c}" id="creditLimit"/>
+                    </apex:pageBlockSectionItem>
+                    <apex:inputField value="{!account.Invoice_Addressed_To__c}" />
+                </apex:pageBlockSection>
+                
+                <apex:pageBlockSection columns="1" id="creditAppInfoSectionForNonAdminRight" rendered="{!NOT(isAdmin)}">
+                    <apex:pageBlockSectionItem >
+                        <apex:outputLabel value="Credit Limit"/>
+                        <apex:outputField value="{!account.Credit_Limit__c}" />
+                    </apex:pageBlockSectionItem>
+                    <apex:outputField value="{!account.Invoice_Addressed_To__c}" />
+                </apex:pageBlockSection>
+                <!-- CREDIT APP INFORMATION RIGHT SECTION END -->
+            </apex:pageBlockSection>
+            <!-- CREDIT APP INFORMATION SECTION END -->
+
+            <!-- SYSTEM INFORMATION SECTION -->
+            <apex:pageBlockSection columns="2" title="System Information">
+                <!-- SYSTEM INFORMATION LEFT SECTION -->
+                <apex:pageBlockSection columns="1">
+                    <apex:outputField value="{!account.Out_of_Sync__c}" />
+                </apex:pageBlockSection>
+                <!-- SYSTEM INFORMATION LEFT SECTION END-->
+
+                <!-- SYSTEM INFORMATION RIGHT SECTION -->
+                <apex:pageBlockSection columns="1">
+                </apex:pageBlockSection>
+                <!-- SYSTEM INFORMATION RIGHT SECTION END -->
+            </apex:pageBlockSection>
+            <!-- SYSTEM INFORMATION SECTION END -->
+        </apex:pageBlock>
+    </apex:form>
+
+    <script type="text/javascript">
+        var records;
+        var queryTerm;
+
+        $('[id$=accountName]').autocomplete({
+            minLength: 2,
+            source: function(request, response) {
+                        queryTerm = request.term;
+                        AutoCompleteController.searchAccount(request.term, function(result, event){
+                            if(event.type == 'exception') {
+                                  alert(event.message);
+                            } else {
+                                 records = result;
+                                 response(records);
+                            }
+                        });
+                   },
+            focus: function( event, ui ) {
+                    $('[id$=accountName]').val( ui.item.Name );
+                    return false;
+                    },
+            select: function( event, ui ) {
+                        $('[id$=accountName]').val( ui.item.Name );
+                        $('[id$=searchAccountId]').val( ui.item.Id );
+                        return false;
+                    },
+         })
+         .data( "autocomplete" )._renderItem = function( ul, item ) {
+            var entry = "<a>" + item.Name;
+
+            entry = entry + "</a>";
+            entry = entry.replace(queryTerm, "<b>" + queryTerm + "</b>");
+            return $( "<li></li>" )
+                .data( "item.autocomplete", item )
+                .append( entry )
+                .appendTo( ul );
+        };
+    </script>
+</apex:page>

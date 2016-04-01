@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Package xmlns="http://soap.sforce.com/2006/04/metadata">
+    <types>
+        <members>Account_Brand_Junction__c</members>
+        <members>Analyst_Mapping</members>
+        <members>Brand__c</members>
+        <members>Employee__c</members>
+        <members>Lead_Source__c</members>
+        <members>Month_Spend__c</members>
+        <members>Sales_Quota__c</members>
+        <name>CustomTab</name>
+    </types>
+    <version>36.0</version>
+</Package>

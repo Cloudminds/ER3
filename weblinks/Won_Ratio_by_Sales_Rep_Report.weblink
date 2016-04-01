@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomPageWebLink xmlns="http://soap.sforce.com/2006/04/metadata">
+    <availability>online</availability>
+    <displayType>link</displayType>
+    <linkType>page</linkType>
+    <masterLabel>Won Ratio by Sales Rep Report</masterLabel>
+    <openType>replace</openType>
+    <page>Report_Opportunity_Sales_Rep_Won_Ratio</page>
+    <protected>false</protected>
+</CustomPageWebLink>

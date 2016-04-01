@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomObjectTranslation xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fields>
+        <caseValues>
+            <plural>false</plural>
+            <value>Total Amount</value>
+        </caseValues>
+        <name>amount_opportunity</name>
+        <startsWith>Consonant</startsWith>
+    </fields>
+    <fields>
+        <caseValues>
+            <plural>false</plural>
+            <value>Conference</value>
+        </caseValues>
+        <name>primary_campaign_source</name>
+        <startsWith>Consonant</startsWith>
+    </fields>
+</CustomObjectTranslation>

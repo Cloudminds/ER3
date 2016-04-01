@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomPageWebLink xmlns="http://soap.sforce.com/2006/04/metadata">
+    <availability>online</availability>
+    <displayType>link</displayType>
+    <height>600</height>
+    <linkType>page</linkType>
+    <masterLabel>Forecasting Report (by Rep)</masterLabel>
+    <openType>sidebar</openType>
+    <page>Report_Opportunity_Forecast_By_Rep</page>
+    <protected>false</protected>
+</CustomPageWebLink>

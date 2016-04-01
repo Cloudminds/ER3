@@ -1,0 +1,7 @@
+<apex:page showheader="false" sidebar="false" >
+    <apex:outputPanel id="CEODashboard" >
+        <script>
+            self.location.href="/01Zi0000000TCdD?isdtp=nv";
+        </script>
+    </apex:outputPanel>
+</apex:page>
